@@ -6,10 +6,12 @@ import Home from "./components/Home";
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
+  const [showLogin, setShowLogin] = useState(false);
 
   const handleLogin = (userData) => {
     setUser(userData);
     setIsLoggedIn(true);
+    setShowLogin(false); // Close login modal after successful login
   };
 
   const handleLogout = () => {
@@ -17,14 +19,30 @@ function App() {
     setIsLoggedIn(false);
   };
 
+  const openLoginModal = () => {
+    setShowLogin(true);
+  };
+
+  const closeLoginModal = () => {
+    setShowLogin(false);
+  };
+
   return (
     <div>
-      <Navbar user={user} isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+      <Navbar 
+        user={user} 
+        isLoggedIn={isLoggedIn} 
+        onLogout={handleLogout} 
+        onOpenLogin={openLoginModal}
+      />
       <Home 
         user={user} 
         isLoggedIn={isLoggedIn} 
         onLogin={handleLogin} 
-        onLogout={handleLogout} 
+        onLogout={handleLogout}
+        showLogin={showLogin}
+        onOpenLogin={openLoginModal}
+        onCloseLogin={closeLoginModal}
       />
       <Footer />
     </div>

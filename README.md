@@ -245,11 +245,7 @@ This project is created for academic purposes as part of SGP III coursework.
 
 <div align="center">
 
-**Made with ❤️ by Hiten Katariya (23CS035)**
-
 *SGP III Project - 2025*
 
 </div> 
-server 
 
-banne ek maj
