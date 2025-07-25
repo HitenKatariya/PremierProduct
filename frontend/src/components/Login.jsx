@@ -16,7 +16,19 @@ export default function Login() {
       setMessage("Login successful!");
       setForm({ email: "", password: "" });
     } catch (err) {
-      setMessage(err.response?.data?.message || "Error logging in");
+      // More robust: show alert for any 4xx error or message containing 'incorrect'/'invalid'
+      const status = err.response?.status;
+      const errorMsg = err.response?.data?.message?.toLowerCase() || "";
+      if (
+        (status >= 400 && status <= 403) ||
+        errorMsg.includes("incorrect") ||
+        errorMsg.includes("invalid")
+      ) {
+        alert("Incorrect username or password");
+        setMessage("");
+      } else {
+        setMessage(err.response?.data?.message || "Error logging in");
+      }
     }
   };
 
