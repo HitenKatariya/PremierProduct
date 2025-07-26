@@ -16,15 +16,6 @@
 
 ---
 
-## 👨‍💻 Developer Information
-
-**Developer:** Hiten Katariya  
-**Student ID:** 23CS035  
-**Project Type:** SGP III (Software Group Project - III)  
-**Academic Year:** 2024-2025
-
----
-
 ## 🚀 Project Overview
 
 Premier Product is a comprehensive full-stack e-commerce platform designed to showcase modern web development practices. This project demonstrates proficiency in building scalable web applications using the MERN stack with additional modern tools and frameworks.
@@ -138,12 +129,6 @@ Premier Product/
    npm run dev
    ```
 
-6. **Access the Application**
-   - Frontend: `http://localhost:5173`
-   - Backend API: `http://localhost:5000`
-
----
-
 ## 📱 Application Components
 
 ### Frontend Components
@@ -220,13 +205,7 @@ Premier Product/
 
 ## 🤝 Contributing
 
-This is an academic project for SGP III. For any questions or suggestions:
-
-**Contact:** Hiten Katariya (23CS035)  
-**Email:** [Your Email]  
-**LinkedIn:** [Your LinkedIn Profile]
-
----
+This is an academic project for SGP III. 
 
 ## 📄 License
 
