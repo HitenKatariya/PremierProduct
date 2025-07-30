@@ -1,8 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import cartService from "../services/cartService";
 
-const Navbar = ({ user, isLoggedIn, onLogout, onOpenLogin }) => {
+const Navbar = ({ user, isLoggedIn, onLogout, onOpenLogin, onOpenCart, cartUpdateTrigger }) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
+  const location = useLocation();
+
+  const isActiveLink = (path) => location.pathname === path;
+
+  // Load cart count when user logs in or cart updates
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      loadCartCount();
+    } else {
+      setCartCount(0);
+    }
+  }, [isLoggedIn, user, cartUpdateTrigger]);
+
+  const loadCartCount = async () => {
+    try {
+      const result = await cartService.getCartCount();
+      if (result.success) {
+        setCartCount(result.count);
+      }
+    } catch (error) {
+      console.error('Load cart count error:', error);
+    }
+  };
 
   return (
     <nav className="bg-white shadow-lg sticky top-0 z-50">
@@ -37,11 +63,29 @@ const Navbar = ({ user, isLoggedIn, onLogout, onOpenLogin }) => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <ul className="flex space-x-8">
-              <li className="text-gray-700 hover:text-blue-700 cursor-pointer font-medium transition-colors">
-                Home
+              <li>
+                <Link 
+                  to="/" 
+                  className={`font-medium transition-colors ${
+                    isActiveLink('/') 
+                      ? 'text-blue-700 border-b-2 border-blue-700 pb-1' 
+                      : 'text-gray-700 hover:text-blue-700'
+                  }`}
+                >
+                  Home
+                </Link>
               </li>
               <li className="text-gray-700 hover:text-blue-700 cursor-pointer font-medium transition-colors relative group">
-                Products
+                <Link 
+                  to="/products" 
+                  className={`font-medium transition-colors ${
+                    isActiveLink('/products') 
+                      ? 'text-blue-700 border-b-2 border-blue-700 pb-1' 
+                      : 'text-gray-700 hover:text-blue-700'
+                  }`}
+                >
+                  Products
+                </Link>
                 <ul className="absolute hidden group-hover:block bg-white text-gray-700 mt-2 rounded-lg shadow-xl p-2 w-48 border">
                   <li className="hover:bg-blue-50 hover:text-blue-700 px-4 py-2 cursor-pointer rounded transition-colors">
                     Brass Cable Glands
@@ -57,24 +101,47 @@ const Navbar = ({ user, isLoggedIn, onLogout, onOpenLogin }) => {
                   </li>
                 </ul>
               </li>
-              <li className="text-gray-700 hover:text-blue-700 cursor-pointer font-medium transition-colors">
-                About Us
+              <li>
+                <Link 
+                  to="/about" 
+                  className={`font-medium transition-colors ${
+                    isActiveLink('/about') 
+                      ? 'text-blue-700 border-b-2 border-blue-700 pb-1' 
+                      : 'text-gray-700 hover:text-blue-700'
+                  }`}
+                >
+                  About Us
+                </Link>
               </li>
-              <li className="text-gray-700 hover:text-blue-700 cursor-pointer font-medium transition-colors">
-                Contact
+              <li>
+                <Link 
+                  to="/contact" 
+                  className={`font-medium transition-colors ${
+                    isActiveLink('/contact') 
+                      ? 'text-blue-700 border-b-2 border-blue-700 pb-1' 
+                      : 'text-gray-700 hover:text-blue-700'
+                  }`}
+                >
+                  Contact
+                </Link>
               </li>
             </ul>
             
             {/* Action Buttons */}
             <div className="flex items-center space-x-4">
               {/* Cart Button */}
-              <button className="relative p-2 text-gray-700 hover:text-blue-700 transition-colors">
+              <button 
+                onClick={onOpenCart}
+                className="relative p-2 text-gray-700 hover:text-blue-700 transition-colors"
+              >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.68 4.64a2 2 0 001.82 2.36h9.72a2 2 0 001.82-2.36L17 13" />
                 </svg>
-                <span className="absolute -top-1 -right-1 bg-blue-700 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
-                  0
-                </span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-blue-700 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </span>
+                )}
               </button>
 
               {/* User Profile Section */}
@@ -155,17 +222,57 @@ const Navbar = ({ user, isLoggedIn, onLogout, onOpenLogin }) => {
         {isMobileMenuOpen && (
           <div className="md:hidden bg-white border-t border-gray-200 py-4">
             <ul className="space-y-4">
-              <li className="text-gray-700 hover:text-blue-700 cursor-pointer font-medium px-4 transition-colors">
-                Home
+              <li>
+                <Link 
+                  to="/" 
+                  className={`block px-4 py-2 font-medium transition-colors ${
+                    isActiveLink('/') 
+                      ? 'text-blue-700 bg-blue-50' 
+                      : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50'
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Home
+                </Link>
               </li>
-              <li className="text-gray-700 hover:text-blue-700 cursor-pointer font-medium px-4 transition-colors">
-                Products
+              <li>
+                <Link 
+                  to="/products" 
+                  className={`block px-4 py-2 font-medium transition-colors ${
+                    isActiveLink('/products') 
+                      ? 'text-blue-700 bg-blue-50' 
+                      : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50'
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Products
+                </Link>
               </li>
-              <li className="text-gray-700 hover:text-blue-700 cursor-pointer font-medium px-4 transition-colors">
-                About Us
+              <li>
+                <Link 
+                  to="/about" 
+                  className={`block px-4 py-2 font-medium transition-colors ${
+                    isActiveLink('/about') 
+                      ? 'text-blue-700 bg-blue-50' 
+                      : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50'
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  About Us
+                </Link>
               </li>
-              <li className="text-gray-700 hover:text-blue-700 cursor-pointer font-medium px-4 transition-colors">
-                Contact
+              <li>
+                <Link 
+                  to="/contact" 
+                  className={`block px-4 py-2 font-medium transition-colors ${
+                    isActiveLink('/contact') 
+                      ? 'text-blue-700 bg-blue-50' 
+                      : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50'
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Contact
+                </Link>
               </li>
             </ul>
             {!isLoggedIn && (

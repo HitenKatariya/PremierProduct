@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import authService from "../services/authService";
+import Login from "./Login";
+import Signup from "./Signup";
 
-const Home = ({ user, isLoggedIn, onLogin, onLogout, showLogin, onOpenLogin, onCloseLogin }) => {
+const Home = ({ user, isLoggedIn, onLogin, onLogout, showLogin, onOpenLogin, onCloseLogin, handleSignup }) => {
   const [showSignup, setShowSignup] = useState(false);
   const [cartItems, setCartItems] = useState([]);
 
@@ -50,22 +53,6 @@ const Home = ({ user, isLoggedIn, onLogin, onLogout, showLogin, onOpenLogin, onC
     }
   ];
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const email = formData.get('email');
-    onLogin({ email });
-  };
-
-  const handleSignup = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const name = formData.get('name');
-    const email = formData.get('email');
-    onLogin({ name, email });
-    setShowSignup(false);
-  };
-
   const handleLogout = () => {
     onLogout();
     setShowSignup(false);
@@ -77,123 +64,30 @@ const Home = ({ user, isLoggedIn, onLogin, onLogout, showLogin, onOpenLogin, onC
     alert(`${product.name} added to cart!`);
   };
 
+  // Modal wrapper components
   const LoginModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full mx-4">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-2xl font-bold text-gray-800">Welcome Back</h3>
-          <button 
-            onClick={onCloseLogin}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
-          >
-            ×
-          </button>
-        </div>
-        <form className="space-y-4" onSubmit={handleLogin}>
-          <div>
-            <label className="block text-gray-700 font-medium mb-2">Email Address</label>
-            <input
-              type="email"
-              name="email"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your email"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium mb-2">Password</label>
-            <input
-              type="password"
-              name="password"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your password"
-              required
-            />
-          </div>
-          <button type="submit" className="w-full bg-blue-700 text-white py-3 rounded-lg hover:bg-blue-800 transition-colors font-medium">
-            Sign In
-          </button>
-        </form>
-        <p className="text-center mt-6 text-gray-600">
-          Don't have an account?{" "}
-          <button 
-            onClick={() => { onCloseLogin(); setShowSignup(true); }}
-            className="text-blue-700 hover:underline font-medium"
-          >
-            Create one here
-          </button>
-        </p>
-      </div>
+      <Login 
+        onLoginSuccess={onLogin} 
+        onClose={onCloseLogin}
+        onSwitchToSignup={() => {
+          onCloseLogin();
+          setShowSignup(true);
+        }}
+      />
     </div>
   );
 
   const SignupModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full mx-4">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-2xl font-bold text-gray-800">Create Account</h3>
-          <button 
-            onClick={() => setShowSignup(false)}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
-          >
-            ×
-          </button>
-        </div>
-        <form className="space-y-4" onSubmit={handleSignup}>
-          <div>
-            <label className="block text-gray-700 font-medium mb-2">Full Name</label>
-            <input
-              type="text"
-              name="name"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your full name"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium mb-2">Email Address</label>
-            <input
-              type="email"
-              name="email"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your email"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium mb-2">Password</label>
-            <input
-              type="password"
-              name="password"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Create a password"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-gray-700 font-medium mb-2">Confirm Password</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Confirm your password"
-              required
-            />
-          </div>
-          <button type="submit" className="w-full bg-blue-700 text-white py-3 rounded-lg hover:bg-blue-800 transition-colors font-medium">
-            Create Account
-          </button>
-        </form>
-        <p className="text-center mt-6 text-gray-600">
-          Already have an account?{" "}
-          <button 
-            onClick={() => { setShowSignup(false); onOpenLogin(); }}
-            className="text-blue-700 hover:underline font-medium"
-          >
-            Sign in here
-          </button>
-        </p>
-      </div>
+      <Signup 
+        onSignupSuccess={handleSignup} 
+        onClose={() => setShowSignup(false)}
+        onSwitchToLogin={() => {
+          setShowSignup(false);
+          onOpenLogin();
+        }}
+      />
     </div>
   );
 
