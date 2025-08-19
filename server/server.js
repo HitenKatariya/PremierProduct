@@ -16,9 +16,31 @@ app.use((req, res, next) => {
   next();
 });
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch(err => console.error("❌ MongoDB error:", err));
+
+// Build MongoDB Atlas URI using env variables
+const DB_USER = process.env.DB_USER;
+const DB_PASS = process.env.DB_PASS;
+const DB_NAME = "PremierProducts";
+const DB_CLUSTER = process.env.DB_CLUSTER || "premierproducts.sz7r7g5";
+const DB_APPNAME = process.env.DB_APPNAME || "PremierProducts";
+
+const mongoURI = `mongodb+srv://${DB_USER}:${DB_PASS}@${DB_CLUSTER}.mongodb.net/${DB_NAME}?retryWrites=true&w=majority&appName=${DB_APPNAME}`;
+
+async function connectDB() {
+  try {
+    await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      dbName: DB_NAME,
+    });
+    console.log("✅ MongoDB Atlas connected");
+  } catch (err) {
+    console.error("❌ MongoDB Atlas connection error:", err);
+    process.exit(1);
+  }
+}
+
+connectDB();
 
 // API Routes
 app.use("/api/users", authRoutes);

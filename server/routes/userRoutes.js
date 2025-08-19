@@ -40,22 +40,41 @@ router.post("/register", async (req, res) => {
       password, // ⚠️ Stored as plain text (for testing/demo only)
     });
 
-    await user.save();
-    console.log("✅ User registered:", user._id);
+    try {
+      await user.save();
+      console.log("✅ User registered:", user._id);
 
-    const token = generateToken(user._id);
+      const token = generateToken(user._id);
 
-    res.status(201).json({
-      success: true,
-      message: "User registered successfully",
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        createdAt: user.createdAt,
-      },
-    });
+      res.status(201).json({
+        success: true,
+        message: "User registered successfully",
+        token,
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          createdAt: user.createdAt,
+        },
+      });
+    } catch (err) {
+      // Handle Mongoose validation errors for email and username
+      if (err.name === "ValidationError" && err.errors) {
+        if (err.errors.email) {
+          return res.status(400).json({
+            success: false,
+            message: err.errors.email.message
+          });
+        }
+        if (err.errors.username) {
+          return res.status(400).json({
+            success: false,
+            message: err.errors.username.message
+          });
+        }
+      }
+      throw err;
+    }
   } catch (error) {
     console.error("⚠️ Registration error:", error);
     res.status(500).json({ success: false, message: "Server error during registration" });

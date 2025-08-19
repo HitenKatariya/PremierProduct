@@ -117,7 +117,7 @@ const Home = ({ user, isLoggedIn, onLogin, onLogout, showLogin, onOpenLogin, onC
             <div className="flex justify-center">
               <div className="bg-white bg-opacity-10 p-8 rounded-2xl backdrop-blur-sm">
                 <img 
-                  src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=500&h=400&fit=crop" 
+                  src="" 
                   alt="Brass Parts" 
                   className="rounded-xl shadow-2xl"
                 />
