@@ -18,7 +18,14 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['Brass Cable Glands', 'Electrical Components', 'Brass Screws & Fittings', 'Custom Parts']
+    enum: [
+      'brass fitting',
+      'brass insert', 
+      'panumatic part',
+      'pressure gauge parts',
+      'Air Conditioners and Refigeration Parts',
+      'cable gland accessories'
+    ]
   },
   image: {
     type: String,

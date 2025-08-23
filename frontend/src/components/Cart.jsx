@@ -5,6 +5,7 @@ const Cart = ({ isOpen, onClose, user, isLoggedIn, cartUpdateTrigger }) => {
   const [cart, setCart] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [removingItems, setRemovingItems] = useState(new Set());
 
   // Load cart when component mounts, user changes, or cart updates
   useEffect(() => {
@@ -18,7 +19,10 @@ const Cart = ({ isOpen, onClose, user, isLoggedIn, cartUpdateTrigger }) => {
       setLoading(true);
       setError('');
       const result = await cartService.getCart();
+      console.log('📦 Load cart response:', result);
+      
       if (result.success) {
+        console.log('✅ Cart loaded successfully:', result.cart);
         setCart(result.cart);
       }
     } catch (error) {
@@ -29,29 +33,60 @@ const Cart = ({ isOpen, onClose, user, isLoggedIn, cartUpdateTrigger }) => {
     }
   };
 
-  const updateQuantity = async (productId, newQuantity) => {
-    try {
-      setError('');
-      const result = await cartService.updateCartItem(productId, newQuantity);
-      if (result.success) {
-        setCart(result.cart);
-      }
-    } catch (error) {
-      setError(error.message || 'Failed to update item');
-      console.error('Update quantity error:', error);
-    }
-  };
-
   const removeItem = async (productId) => {
+    // Prevent multiple clicks
+    if (removingItems.has(productId)) {
+      console.log('⏳ Already removing item:', productId);
+      return;
+    }
+    
     try {
       setError('');
+      setRemovingItems(prev => new Set([...prev, productId]));
+      console.log('🗑️ Removing item:', productId);
+      
+      // Optimistically update UI first
+      const optimisticCart = {
+        ...cart,
+        items: cart.items.filter(item => {
+          const itemProductId = item.productId._id || item.productId;
+          return itemProductId !== productId;
+        })
+      };
+      
+      // Recalculate totals for optimistic update
+      optimisticCart.totalItems = optimisticCart.items.reduce((total, item) => total + item.quantity, 0);
+      optimisticCart.totalAmount = optimisticCart.items.reduce((total, item) => total + item.subtotal, 0);
+      
+      setCart(optimisticCart);
+      
       const result = await cartService.removeFromCart(productId);
+      console.log('📦 Remove item response:', result);
+      
       if (result.success) {
+        console.log('✅ Item removed successfully, updating with server state');
         setCart(result.cart);
+      } else {
+        console.log('❌ Remove failed, reverting optimistic update');
+        // Revert optimistic update if server request failed
+        loadCart();
       }
     } catch (error) {
-      setError(error.message || 'Failed to remove item');
       console.error('Remove item error:', error);
+      
+      // Revert optimistic update and reload cart
+      console.log('❌ Remove error, reloading cart...');
+      loadCart();
+      
+      if (error.message && !error.message.includes('not found')) {
+        setError(error.message || 'Failed to remove item');
+      }
+    } finally {
+      setRemovingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(productId);
+        return newSet;
+      });
     }
   };
 
@@ -125,8 +160,10 @@ const Cart = ({ isOpen, onClose, user, isLoggedIn, cartUpdateTrigger }) => {
             <>
               {/* Cart Items */}
               <div className="space-y-4 mb-6">
-                {cart.items.map((item) => (
-                  <div key={item.productId} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                {cart.items.map((item) => {
+                  const productId = item.productId._id || item.productId;
+                  return (
+                  <div key={productId} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
                     <img
                       src={item.productImage || 'https://via.placeholder.com/80x80?text=Product'}
                       alt={item.productName}
@@ -134,37 +171,33 @@ const Cart = ({ isOpen, onClose, user, isLoggedIn, cartUpdateTrigger }) => {
                     />
                     <div className="flex-1">
                       <h3 className="font-medium text-gray-800 text-sm">{item.productName}</h3>
-                      <p className="text-blue-700 font-bold">${item.productPrice.toFixed(2)}</p>
-                      <div className="flex items-center space-x-2 mt-2">
+                      <p className="text-blue-700 font-bold">₹{item.productPrice.toFixed(0)}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-gray-600">Quantity:</span>
+                          <span className="px-3 py-1 bg-white border border-gray-300 rounded text-sm min-w-[3rem] text-center font-medium">
+                            {item.quantity}
+                          </span>
+                        </div>
                         <button
-                          onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                          disabled={item.quantity <= 1}
-                          className="w-8 h-8 bg-white border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                          onClick={() => removeItem(productId)}
+                          disabled={removingItems.has(productId)}
+                          className={`text-sm font-medium transition-colors ${
+                            removingItems.has(productId) 
+                              ? 'text-gray-400 cursor-not-allowed' 
+                              : 'text-red-600 hover:text-red-800'
+                          }`}
                         >
-                          -
-                        </button>
-                        <span className="px-3 py-1 bg-white border border-gray-300 rounded text-sm min-w-[3rem] text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                          className="w-8 h-8 bg-white border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100"
-                        >
-                          +
-                        </button>
-                        <button
-                          onClick={() => removeItem(item.productId)}
-                          className="ml-2 text-red-600 hover:text-red-800 text-sm"
-                        >
-                          Remove
+                          {removingItems.has(productId) ? 'Removing...' : 'Remove'}
                         </button>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-gray-800">${item.subtotal.toFixed(2)}</p>
+                      <p className="font-bold text-gray-800">₹{item.subtotal.toFixed(0)}</p>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Cart Summary */}
@@ -175,7 +208,7 @@ const Cart = ({ isOpen, onClose, user, isLoggedIn, cartUpdateTrigger }) => {
                 </div>
                 <div className="flex justify-between items-center mb-4">
                   <span className="text-lg font-bold text-gray-800">Total Amount:</span>
-                  <span className="text-lg font-bold text-blue-700">${cart.totalAmount.toFixed(2)}</span>
+                  <span className="text-lg font-bold text-blue-700">₹{cart.totalAmount.toFixed(0)}</span>
                 </div>
                 
                 {/* Action Buttons */}

@@ -1,24 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import productService from '../services/productService';
 import cartService from '../services/cartService';
+import Login from './Login';
+import Signup from './Signup';
 
-const Products = ({ user, isLoggedIn, onUpdateCartCount }) => {
+const Products = ({ user, isLoggedIn, onUpdateCartCount, showLogin, onOpenLogin, onCloseLogin, onLogin, handleSignup }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [addingToCart, setAddingToCart] = useState(null);
+  const [showSignup, setShowSignup] = useState(false);
+  const [quantityModal, setQuantityModal] = useState({ show: false, product: null, quantity: 1 });
   const [filters, setFilters] = useState({
     category: '',
-    search: '',
-    page: 1
+    search: ''
   });
 
   const categories = [
     'All',
-    'Brass Cable Glands',
-    'Electrical Components',
-    'Brass Screws & Fittings',
-    'Custom Parts'
+    'brass fitting',
+    'brass insert',
+    'panumatic part',
+    'pressure gauge parts',
+    'Air Conditioners and Refigeration Parts',
+    'cable gland accessories'
   ];
 
   useEffect(() => {
@@ -32,7 +37,8 @@ const Products = ({ user, isLoggedIn, onUpdateCartCount }) => {
       
       const filterParams = {
         ...filters,
-        category: filters.category === 'All' ? '' : filters.category
+        category: filters.category === 'All' ? '' : filters.category,
+        limit: 100 // Set high limit to show all products
       };
       
       const result = await productService.getProducts(filterParams);
@@ -49,19 +55,32 @@ const Products = ({ user, isLoggedIn, onUpdateCartCount }) => {
 
   const handleAddToCart = async (product) => {
     if (!isLoggedIn) {
-      alert('Please login to add items to cart');
+      // Open login modal instead of just showing alert
+      if (onOpenLogin) {
+        onOpenLogin();
+      } else {
+        alert('Please login to add items to cart');
+      }
       return;
     }
 
+    // Open quantity selection modal
+    setQuantityModal({ show: true, product, quantity: 1 });
+  };
+
+  const handleQuantityConfirm = async () => {
+    const { product, quantity } = quantityModal;
+    
     try {
       setAddingToCart(product._id);
-      const result = await cartService.addToCart(product._id, 1);
+      const result = await cartService.addToCart(product._id, quantity);
       
       if (result.success) {
-        alert(`${product.name} added to cart!`);
+        alert(`${quantity} × ${product.name} added to cart!`);
         if (onUpdateCartCount) {
           onUpdateCartCount();
         }
+        setQuantityModal({ show: false, product: null, quantity: 1 });
       }
     } catch (error) {
       alert(error.message || 'Failed to add item to cart');
@@ -71,13 +90,122 @@ const Products = ({ user, isLoggedIn, onUpdateCartCount }) => {
     }
   };
 
+  const handleQuantityCancel = () => {
+    setQuantityModal({ show: false, product: null, quantity: 1 });
+  };
+
+  const handleQuantityInputChange = (e) => {
+    const value = parseInt(e.target.value) || 1;
+    const maxStock = quantityModal.product?.stockQuantity || 100;
+    const newQuantity = Math.max(1, Math.min(maxStock, value));
+    setQuantityModal(prev => ({ ...prev, quantity: newQuantity }));
+  };
+
   const handleCategoryChange = (category) => {
-    setFilters(prev => ({ ...prev, category, page: 1 }));
+    setFilters(prev => ({ ...prev, category }));
   };
 
   const handleSearchChange = (e) => {
-    setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }));
+    setFilters(prev => ({ ...prev, search: e.target.value }));
   };
+
+  // Modal wrapper components
+  const LoginModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <Login 
+        onLoginSuccess={onLogin} 
+        onClose={onCloseLogin}
+        onSwitchToSignup={() => {
+          onCloseLogin();
+          setShowSignup(true);
+        }}
+      />
+    </div>
+  );
+
+  const SignupModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <Signup 
+        onSignupSuccess={handleSignup} 
+        onClose={() => setShowSignup(false)}
+        onSwitchToLogin={() => {
+          setShowSignup(false);
+          if (onOpenLogin) onOpenLogin();
+        }}
+      />
+    </div>
+  );
+
+  const QuantityModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-2xl">
+        <div className="text-center mb-6">
+          <h3 className="text-xl font-bold text-gray-800 mb-2">Add to Cart</h3>
+          <p className="text-gray-600">{quantityModal.product?.name}</p>
+          <p className="text-blue-700 font-bold text-lg">₹{quantityModal.product?.price?.toFixed(0)}</p>
+        </div>
+
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Quantity
+          </label>
+          <div className="flex items-center justify-center space-x-4">
+            <button
+              onClick={() => setQuantityModal(prev => ({ 
+                ...prev, 
+                quantity: Math.max(1, prev.quantity - 1) 
+              }))}
+              className="w-10 h-10 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center font-bold text-gray-600"
+            >
+              -
+            </button>
+            <input
+              type="number"
+              value={quantityModal.quantity}
+              onChange={handleQuantityInputChange}
+              min="1"
+              max={quantityModal.product?.stockQuantity || 100}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-lg font-medium w-20 text-center focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+            <button
+              onClick={() => setQuantityModal(prev => ({ 
+                ...prev, 
+                quantity: Math.min(quantityModal.product?.stockQuantity || 100, prev.quantity + 1) 
+              }))}
+              className="w-10 h-10 bg-gray-200 hover:bg-gray-300 rounded-full flex items-center justify-center font-bold text-gray-600"
+            >
+              +
+            </button>
+          </div>
+          <p className="text-sm text-gray-500 text-center mt-2">
+            Available: {quantityModal.product?.stockQuantity || 0} units
+          </p>
+        </div>
+
+        <div className="flex space-x-3">
+          <button
+            onClick={handleQuantityCancel}
+            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleQuantityConfirm}
+            disabled={addingToCart === quantityModal.product?._id}
+            className="flex-1 px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {addingToCart === quantityModal.product?._id ? 'Adding...' : 'Add to Cart'}
+          </button>
+        </div>
+
+        <div className="mt-4 text-center">
+          <p className="text-sm text-gray-600">
+            Total: <span className="font-bold text-blue-700">₹{((quantityModal.product?.price || 0) * quantityModal.quantity).toFixed(0)}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -153,7 +281,7 @@ const Products = ({ user, isLoggedIn, onUpdateCartCount }) => {
                   <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
                   
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-2xl font-bold text-blue-700">${product.price.toFixed(2)}</span>
+                    <span className="text-2xl font-bold text-blue-700">₹{product.price.toFixed(0)}</span>
                     <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
                       {product.category}
                     </span>
@@ -216,6 +344,15 @@ const Products = ({ user, isLoggedIn, onUpdateCartCount }) => {
           </div>
         )}
       </div>
+      
+      {/* Login Modal */}
+      {showLogin && <LoginModal />}
+      
+      {/* Signup Modal */}
+      {showSignup && <SignupModal />}
+
+      {/* Quantity Modal */}
+      {quantityModal.show && <QuantityModal />}
     </div>
   );
 };

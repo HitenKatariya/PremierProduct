@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./components/Home";
@@ -9,13 +9,14 @@ import Cart from "./components/Cart";
 import authService from "./services/authService";
 import cartService from "./services/cartService";
 
-function App() {
+function AppContent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [cartUpdateTrigger, setCartUpdateTrigger] = useState(0);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   // Check if user is already logged in on app start
   useEffect(() => {
@@ -49,6 +50,8 @@ function App() {
         setIsLoggedIn(true);
         setShowLogin(false);
         console.log("✅ User logged in successfully:", loginData.user);
+        // Redirect to home page after successful login
+        navigate('/');
         return;
       }
 
@@ -72,6 +75,8 @@ function App() {
         setUser(result.user);
         setIsLoggedIn(true);
         setShowLogin(false);
+        // Redirect to home page after successful login
+        navigate('/');
       } else {
         alert(result.message || 'Login failed');
       }
@@ -142,16 +147,15 @@ function App() {
   }
 
   return (
-    <Router>
-      <div>
-        <Navbar 
-          user={user} 
-          isLoggedIn={isLoggedIn} 
-          onLogout={handleLogout} 
-          onOpenLogin={openLoginModal}
-          onOpenCart={openCartModal}
-          cartUpdateTrigger={cartUpdateTrigger}
-        />
+    <div>
+      <Navbar 
+        user={user} 
+        isLoggedIn={isLoggedIn} 
+        onLogout={handleLogout} 
+        onOpenLogin={openLoginModal}
+        onOpenCart={openCartModal}
+        cartUpdateTrigger={cartUpdateTrigger}
+      />
         <Routes>
           <Route 
             path="/" 
@@ -176,6 +180,11 @@ function App() {
                 user={user} 
                 isLoggedIn={isLoggedIn} 
                 onUpdateCartCount={updateCartCount}
+                showLogin={showLogin}
+                onOpenLogin={openLoginModal}
+                onCloseLogin={closeLoginModal}
+                onLogin={handleLogin}
+                handleSignup={handleSignup}
               />
             } 
           />
@@ -192,6 +201,13 @@ function App() {
           cartUpdateTrigger={cartUpdateTrigger}
         />
       </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }

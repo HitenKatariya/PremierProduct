@@ -75,7 +75,7 @@ const Navbar = ({ user, isLoggedIn, onLogout, onOpenLogin, onOpenCart, cartUpdat
                   Home
                 </Link>
               </li>
-              <li className="text-gray-700 hover:text-blue-700 cursor-pointer font-medium transition-colors relative group">
+              <li>
                 <Link 
                   to="/products" 
                   className={`font-medium transition-colors ${
@@ -86,20 +86,6 @@ const Navbar = ({ user, isLoggedIn, onLogout, onOpenLogin, onOpenCart, cartUpdat
                 >
                   Products
                 </Link>
-                <ul className="absolute hidden group-hover:block bg-white text-gray-700 mt-2 rounded-lg shadow-xl p-2 w-48 border">
-                  <li className="hover:bg-blue-50 hover:text-blue-700 px-4 py-2 cursor-pointer rounded transition-colors">
-                    Brass Cable Glands
-                  </li>
-                  <li className="hover:bg-blue-50 hover:text-blue-700 px-4 py-2 cursor-pointer rounded transition-colors">
-                    Electrical Components
-                  </li>
-                  <li className="hover:bg-blue-50 hover:text-blue-700 px-4 py-2 cursor-pointer rounded transition-colors">
-                    Brass Screws & Fittings
-                  </li>
-                  <li className="hover:bg-blue-50 hover:text-blue-700 px-4 py-2 cursor-pointer rounded transition-colors">
-                    Custom Parts
-                  </li>
-                </ul>
               </li>
               <li>
                 <Link 

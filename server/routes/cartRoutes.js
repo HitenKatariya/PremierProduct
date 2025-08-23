@@ -166,18 +166,26 @@ router.put('/update', authenticateToken, async (req, res) => {
       await cart.updateItemQuantity(productId, parseInt(quantity));
     }
 
+    // Reload cart with populated product data to ensure fresh state
+    const updatedCart = await Cart.findById(cart._id).populate('items.productId', 'name price image');
+
     console.log('✅ Cart item updated successfully');
+    console.log('📊 Updated cart totals:', {
+      totalItems: updatedCart.totalItems,
+      totalAmount: updatedCart.totalAmount,
+      itemCount: updatedCart.items.length
+    });
 
     res.status(200).json({
       success: true,
       message: 'Cart updated successfully',
       cart: {
-        id: cart._id,
-        userId: cart.userId,
-        items: cart.items,
-        totalAmount: cart.totalAmount,
-        totalItems: cart.totalItems,
-        lastUpdated: cart.lastUpdated
+        id: updatedCart._id,
+        userId: updatedCart.userId,
+        items: updatedCart.items,
+        totalAmount: updatedCart.totalAmount,
+        totalItems: updatedCart.totalItems,
+        lastUpdated: updatedCart.lastUpdated
       }
     });
   } catch (error) {
@@ -196,6 +204,14 @@ router.delete('/remove/:productId', authenticateToken, async (req, res) => {
     const { productId } = req.params;
     const userId = req.user._id;
 
+    // Validate productId format
+    if (!productId || productId === '[object Object]' || productId === 'undefined' || productId === 'null') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid product ID' 
+      });
+    }
+
     const cart = await Cart.findOne({ userId });
     if (!cart) {
       return res.status(404).json({ 
@@ -206,18 +222,26 @@ router.delete('/remove/:productId', authenticateToken, async (req, res) => {
 
     await cart.removeItem(productId);
 
+    // Reload cart with populated product data to ensure fresh state
+    const updatedCart = await Cart.findById(cart._id).populate('items.productId', 'name price image');
+
     console.log('✅ Item removed from cart successfully');
+    console.log('📊 Updated cart totals:', {
+      totalItems: updatedCart.totalItems,
+      totalAmount: updatedCart.totalAmount,
+      itemCount: updatedCart.items.length
+    });
 
     res.status(200).json({
       success: true,
       message: 'Item removed from cart successfully',
       cart: {
-        id: cart._id,
-        userId: cart.userId,
-        items: cart.items,
-        totalAmount: cart.totalAmount,
-        totalItems: cart.totalItems,
-        lastUpdated: cart.lastUpdated
+        id: updatedCart._id,
+        userId: updatedCart.userId,
+        items: updatedCart.items,
+        totalAmount: updatedCart.totalAmount,
+        totalItems: updatedCart.totalItems,
+        lastUpdated: updatedCart.lastUpdated
       }
     });
   } catch (error) {
