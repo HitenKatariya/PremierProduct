@@ -15,9 +15,12 @@ router.get('/', async (req, res) => {
       query.category = category;
     }
     
-    // Add search functionality
+    // Add search functionality with case-insensitive regex
     if (search) {
-      query.$text = { $search: search };
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
     }
     
     const pageNum = parseInt(page);
