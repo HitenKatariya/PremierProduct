@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import authService from "../services/authService";
 
 export default function Login({ onLoginSuccess, onClose, onSwitchToSignup }) {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -23,46 +23,29 @@ export default function Login({ onLoginSuccess, onClose, onSwitchToSignup }) {
     setMessage("Logging in...");
     
     try {
-      const res = await axios.post("http://localhost:5000/api/users/login", form);
-      console.log("✅ Login response:", res.data);
+      const result = await authService.login(form.email, form.password);
+      console.log("✅ Login response:", result);
       
-      if (res.data.success) {
+      if (result.success) {
         setMessage("✅ Login successful!");
         setForm({ email: "", password: "" });
-        
-        // Store token
-        if (res.data.token) {
-          localStorage.setItem('token', res.data.token);
-          console.log("🔑 Token saved:", res.data.token);
-        }
 
         // Call success callback to update parent state and redirect
         if (onLoginSuccess) {
           setTimeout(() => {
             onLoginSuccess({
-              user: res.data.user,
-              token: res.data.token
+              user: result.user,
+              token: result.token
             });
             onClose && onClose(); // Close modal/form
           }, 1500); // Show success message briefly before redirecting
         }
       } else {
-        setMessage("❌ Login failed");
+        setMessage("❌ " + result.message);
       }
     } catch (err) {
       console.error("❌ Login error:", err);
-      // More robust: show alert for any 4xx error or message containing 'incorrect'/'invalid'
-      const status = err.response?.status;
-      const errorMsg = err.response?.data?.message?.toLowerCase() || "";
-      if (
-        (status >= 400 && status <= 403) ||
-        errorMsg.includes("incorrect") ||
-        errorMsg.includes("invalid")
-      ) {
-        setMessage("❌ Incorrect username or password");
-      } else {
-        setMessage("❌ " + (err.response?.data?.message || "Error logging in"));
-      }
+      setMessage("❌ Error logging in");
     } finally {
       setIsLoading(false);
     }
@@ -307,12 +290,6 @@ const inputStyle = {
   transition: "all 0.2s ease",
   outline: "none",
   backgroundColor: "#ffffff"
-};
-
-// Add focus styles programmatically
-const inputFocusStyle = {
-  borderColor: "#3b82f6",
-  boxShadow: "0 0 0 3px rgba(59, 130, 246, 0.1)"
 };
 
 const buttonStyle = {

@@ -8,10 +8,10 @@ const userSchema = new mongoose.Schema(
       trim: true,
       validate: {
         validator: function (v) {
-          // Only alphabets (a-z, A-Z)
-          return /^[a-zA-Z]+$/.test(v);
+          // Allow letters, spaces, and basic punctuation for names
+          return /^[a-zA-Z\s\.\-\']+$/.test(v) && v.trim().length >= 2;
         },
-        message: props => `Username '${props.value}' is invalid. Only alphabets are allowed.`
+        message: props => `Username '${props.value}' is invalid. Only letters, spaces, and basic punctuation are allowed, minimum 2 characters.`
       }
     },
     email: {
@@ -22,11 +22,11 @@ const userSchema = new mongoose.Schema(
       trim: true,
       validate: {
         validator: function (v) {
-          // Must start with a letter and end with @gmail.com
-          return /^[a-zA-Z][\w\.\-]*@gmail\.com$/.test(v);
+          // Standard email validation - allow any domain
+          return /^[a-zA-Z0-9][a-zA-Z0-9._-]*@[a-zA-Z0-9][a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v);
         },
         message: props =>
-          `Email '${props.value}' is invalid. It must start with a letter and end with '@gmail.com'.`
+          `Email '${props.value}' is invalid. Please enter a valid email address.`
       }
     },
     password: { type: String, required: true, minlength: 6 },

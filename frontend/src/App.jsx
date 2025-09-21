@@ -1,13 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
-import Home from "./components/Home";
-import About from "./components/About";
-import Products from "./components/Products";
-import Cart from "./components/Cart";
-import authService from "./services/authService";
-import cartService from "./services/cartService";
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Home from './components/Home';
+import About from './components/About';
+import Products from './components/Products';
+import Cart from './components/Cart';
+import Checkout from './components/Checkout';
+import OrderSuccess from './components/OrderSuccess';
+import AdminLogin from './components/AdminLogin';
+import AdminDashboard from './components/AdminDashboard';
+import AdminProducts from './components/AdminProducts';
+import AdminOrders from './components/AdminOrders';
+import authService from './services/authService';
 
 function AppContent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -188,7 +193,27 @@ function AppContent() {
               />
             } 
           />
+          <Route 
+            path="/checkout" 
+            element={
+              <Checkout 
+                user={user} 
+                isLoggedIn={isLoggedIn} 
+                onUpdateCartCount={updateCartCount}
+              />
+            } 
+          />
+          <Route 
+            path="/order-success" 
+            element={<OrderSuccess />} 
+          />
           <Route path="/contact" element={<div className="min-h-screen flex items-center justify-center"><h1 className="text-2xl text-gray-600">Contact Page Coming Soon</h1></div>} />
+          
+          {/* Admin Routes */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/products" element={<AdminProducts />} />
+          <Route path="/admin/orders" element={<AdminOrders />} />
         </Routes>
         <Footer />
         

@@ -2,13 +2,20 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const path = require("path");
 const authRoutes = require("./routes/userRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const productRoutes = require("./routes/productRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+const adminAuthRoutes = require("./routes/adminAuthRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
 app.use(cors()); // Add CORS middleware
 app.use(express.json());
+
+// Serve static files for uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Add request logging
 app.use((req, res, next) => {
@@ -46,6 +53,9 @@ connectDB();
 app.use("/api/users", authRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/admin/auth", adminAuthRoutes);
+app.use("/api/admin", adminRoutes);
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3004;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

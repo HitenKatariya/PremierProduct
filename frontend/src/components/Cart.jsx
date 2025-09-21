@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import cartService from '../services/cartService';
 
 const Cart = ({ isOpen, onClose, user, isLoggedIn, cartUpdateTrigger }) => {
@@ -6,6 +7,7 @@ const Cart = ({ isOpen, onClose, user, isLoggedIn, cartUpdateTrigger }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [removingItems, setRemovingItems] = useState(new Set());
+  const navigate = useNavigate();
 
   // Load cart when component mounts, user changes, or cart updates
   useEffect(() => {
@@ -101,6 +103,22 @@ const Cart = ({ isOpen, onClose, user, isLoggedIn, cartUpdateTrigger }) => {
       setError(error.message || 'Failed to clear cart');
       console.error('Clear cart error:', error);
     }
+  };
+
+  const handleProceedToCheckout = () => {
+    if (!isLoggedIn) {
+      alert('Please login to proceed to checkout');
+      return;
+    }
+
+    if (!cart || cart.totalItems === 0) {
+      alert('Your cart is empty. Please add items before checkout');
+      return;
+    }
+
+    // Close the cart modal and navigate to checkout
+    onClose();
+    navigate('/checkout');
   };
 
   if (!isOpen) return null;
@@ -213,7 +231,10 @@ const Cart = ({ isOpen, onClose, user, isLoggedIn, cartUpdateTrigger }) => {
                 
                 {/* Action Buttons */}
                 <div className="space-y-3">
-                  <button className="w-full bg-blue-700 text-white py-3 rounded-lg hover:bg-blue-800 transition-colors font-medium">
+                  <button 
+                    onClick={handleProceedToCheckout}
+                    className="w-full bg-blue-700 text-white py-3 rounded-lg hover:bg-blue-800 transition-colors font-medium"
+                  >
                     Proceed to Checkout
                   </button>
                   <button

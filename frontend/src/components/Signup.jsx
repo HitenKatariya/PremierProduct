@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import authService from "../services/authService";
 
 export default function Signup({ onSignupSuccess, onClose, onSwitchToLogin }) {
   const [form, setForm] = useState({ username: "", email: "", password: "" });
@@ -24,35 +24,29 @@ export default function Signup({ onSignupSuccess, onClose, onSwitchToLogin }) {
     setMessage("Creating account..."); // Show loading state
     
     try {
-      const res = await axios.post("http://localhost:5000/api/users/register", form);
-      console.log("✅ Registration response:", res.data);
+      const result = await authService.register(form.username, form.email, form.password);
+      console.log("✅ Registration response:", result);
       
-      if (res.data.success) {
-        setMessage("✅ " + res.data.message);
+      if (result.success) {
+        setMessage("✅ " + result.message);
         setForm({ username: "", email: "", password: "" });
-        
-        // Store token if needed
-        if (res.data.token) {
-          localStorage.setItem('token', res.data.token);
-          console.log("🔑 Token saved:", res.data.token);
-        }
 
         // Call success callback to update parent state and redirect
         if (onSignupSuccess) {
           setTimeout(() => {
             onSignupSuccess({
-              user: res.data.user,
-              token: res.data.token
+              user: result.user,
+              token: result.token
             });
             onClose && onClose(); // Close modal/form
           }, 1500); // Show success message briefly before redirecting
         }
       } else {
-        setMessage("❌ Registration failed");
+        setMessage("❌ " + result.message);
       }
     } catch (err) {
       console.error("❌ Registration error:", err);
-      const errorMessage = err.response?.data?.message || "Error signing up";
+      const errorMessage = "Error signing up";
       setMessage("❌ " + errorMessage);
     } finally {
       setIsLoading(false); // Reset loading state
