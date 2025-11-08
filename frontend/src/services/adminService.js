@@ -14,6 +14,27 @@ const createAuthHeader = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
+// Add axios response interceptor to handle token expiration globally
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      const message = error.response?.data?.message || '';
+      if (message.includes('expired') || message.includes('invalid')) {
+        // Token expired, clear auth data and redirect to login
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminUser');
+        
+        // Only redirect if we're not already on the login page
+        if (!window.location.pathname.includes('/admin/login')) {
+          window.location.href = '/admin/login';
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Admin Authentication Service
 class AdminAuthService {
   // Set token in localStorage
@@ -29,7 +50,24 @@ class AdminAuthService {
 
   // Check if admin is authenticated
   isAuthenticated() {
-    return !!this.getToken();
+    const token = this.getToken();
+    if (!token) return false;
+    
+    // Check if token is expired (basic check)
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Date.now() / 1000;
+      if (payload.exp < currentTime) {
+        console.log('Token expired, removing...');
+        this.removeToken();
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error('Error checking token:', error);
+      this.removeToken();
+      return false;
+    }
   }
 
   // Get token
@@ -156,6 +194,17 @@ class AdminDashboardService {
       return response.data;
     } catch (error) {
       console.error('Get dashboard overview error:', error);
+      
+      // Handle token expiration
+      if (error.response?.status === 401 && 
+          (error.response?.data?.message?.includes('expired') || 
+           error.response?.data?.message?.includes('invalid'))) {
+        // Token expired, clear auth data and redirect to login
+        adminAuthService.removeToken();
+        window.location.href = '/admin/login';
+        return;
+      }
+      
       throw error.response?.data || { success: false, message: 'Failed to get dashboard data' };
     }
   }

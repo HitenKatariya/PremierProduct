@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -41,12 +42,12 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold text-white mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Home</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">About Us</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Products</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Quality</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Contact</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Resources</a></li>
+              <li><Link to="/" className="text-gray-400 hover:text-white transition-colors">Home</Link></li>
+              <li><Link to="/about" className="text-gray-400 hover:text-white transition-colors">About Us</Link></li>
+              <li><Link to="/products" className="text-gray-400 hover:text-white transition-colors">Products</Link></li>
+              <li><Link to="/about" className="text-gray-400 hover:text-white transition-colors">Quality</Link></li>
+              <li><Link to="/contact" className="text-gray-400 hover:text-white transition-colors">Contact</Link></li>
+              <li><Link to="/products" className="text-gray-400 hover:text-white transition-colors">Resources</Link></li>
             </ul>
           </div>
 
@@ -54,12 +55,12 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-semibold text-white mb-4">Products</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Brass Cable Glands</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Electrical Components</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Brass Screws</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Custom Parts</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Pipe Fittings</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white transition-colors">Terminal Blocks</a></li>
+              <li><Link to="/products?category=cable gland accessories" className="text-gray-400 hover:text-white transition-colors">Brass Cable Glands</Link></li>
+              <li><Link to="/products" className="text-gray-400 hover:text-white transition-colors">Electrical Components</Link></li>
+              <li><Link to="/products" className="text-gray-400 hover:text-white transition-colors">Brass Screws</Link></li>
+              <li><Link to="/products" className="text-gray-400 hover:text-white transition-colors">Custom Parts</Link></li>
+              <li><Link to="/products?category=brass fitting" className="text-gray-400 hover:text-white transition-colors">Pipe Fittings</Link></li>
+              <li><Link to="/products" className="text-gray-400 hover:text-white transition-colors">Terminal Blocks</Link></li>
             </ul>
           </div>
         </div>
@@ -87,7 +88,7 @@ const Footer = () => {
               </div>
               <div>
                 <h5 className="text-white font-medium">Phone</h5>
-                <p className="text-gray-400 text-sm">+91 288 2567533</p>
+                <a href="tel:9427284945" className="text-gray-400 text-sm hover:text-white">9427284945</a>
               </div>
             </div>
             <div className="flex items-center space-x-3">

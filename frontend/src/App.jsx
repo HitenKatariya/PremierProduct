@@ -5,6 +5,8 @@ import Footer from './components/Footer';
 import Home from './components/Home';
 import About from './components/About';
 import Products from './components/Products';
+import Contact from './components/Contact';
+import ProductDetail from './components/ProductDetail';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
 import OrderSuccess from './components/OrderSuccess';
@@ -13,6 +15,7 @@ import AdminDashboard from './components/AdminDashboard';
 import AdminProducts from './components/AdminProducts';
 import AdminOrders from './components/AdminOrders';
 import authService from './services/authService';
+import { NotificationProvider, useNotification } from './components/Notification';
 
 function AppContent() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -22,29 +25,49 @@ function AppContent() {
   const [cartUpdateTrigger, setCartUpdateTrigger] = useState(0);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { addToast } = useNotification();
 
   // Check if user is already logged in on app start
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
+        console.log('🔍 Checking authentication status...');
         if (authService.isAuthenticated()) {
+          console.log('🔑 Token found, getting profile...');
           const profileResult = await authService.getProfile();
           if (profileResult.success) {
             setUser(profileResult.user);
             setIsLoggedIn(true);
+            console.log('✅ User authenticated:', profileResult.user);
           } else {
             // Token is invalid, clear it
+            console.log('❌ Invalid token, clearing...');
             authService.removeToken();
           }
+        } else {
+          console.log('🚫 No token found');
         }
       } catch (error) {
-        console.error('Auth check error:', error);
+        console.error('❌ Auth check error:', error);
+        // Clear any invalid tokens
+        authService.removeToken();
       } finally {
+        console.log('✅ Auth check complete, setting loading to false');
         setLoading(false);
       }
     };
 
-    checkAuthStatus();
+    // Add timeout to prevent hanging
+    const timeoutId = setTimeout(() => {
+      console.log('⏰ Auth check timeout, forcing loading to false');
+      setLoading(false);
+    }, 5000);
+
+    checkAuthStatus().finally(() => {
+      clearTimeout(timeoutId);
+    });
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   const handleLogin = async (loginData) => {
@@ -83,11 +106,11 @@ function AppContent() {
         // Redirect to home page after successful login
         navigate('/');
       } else {
-        alert(result.message || 'Login failed');
+        addToast(result.message || 'Login failed', 'error');
       }
     } catch (error) {
       console.error('Login error:', error);
-      alert('Login failed. Please try again.');
+      addToast('Login failed. Please try again.', 'error');
     }
   };
 
@@ -152,8 +175,8 @@ function AppContent() {
   }
 
   return (
-    <div>
-      <Navbar 
+      <div>
+        <Navbar 
         user={user} 
         isLoggedIn={isLoggedIn} 
         onLogout={handleLogout} 
@@ -193,6 +216,7 @@ function AppContent() {
               />
             } 
           />
+          <Route path="/product/:id" element={<ProductDetail isLoggedIn={isLoggedIn} onUpdateCartCount={updateCartCount} />} />
           <Route 
             path="/checkout" 
             element={
@@ -207,7 +231,7 @@ function AppContent() {
             path="/order-success" 
             element={<OrderSuccess />} 
           />
-          <Route path="/contact" element={<div className="min-h-screen flex items-center justify-center"><h1 className="text-2xl text-gray-600">Contact Page Coming Soon</h1></div>} />
+          <Route path="/contact" element={<Contact />} />
           
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -215,7 +239,7 @@ function AppContent() {
           <Route path="/admin/products" element={<AdminProducts />} />
           <Route path="/admin/orders" element={<AdminOrders />} />
         </Routes>
-        <Footer />
+  <Footer />
         
         {/* Cart Modal */}
         <Cart 
@@ -226,13 +250,16 @@ function AppContent() {
           cartUpdateTrigger={cartUpdateTrigger}
         />
       </div>
+    
   );
 }
 
 function App() {
   return (
     <Router>
-      <AppContent />
+      <NotificationProvider>
+        <AppContent />
+      </NotificationProvider>
     </Router>
   );
 }

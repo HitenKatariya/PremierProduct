@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminAuthService, adminProductService } from '../services/adminService';
+import { useNotification } from './Notification';
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
@@ -22,6 +23,7 @@ const AdminProducts = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState(null);
   const navigate = useNavigate();
+  const { addToast } = useNotification();
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -69,11 +71,11 @@ const AdminProducts = () => {
         setShowAddModal(false);
         resetForm();
         fetchProducts();
-        alert('Product added successfully!');
+        addToast('Product added successfully!', 'success');
       }
-    } catch (error) {
+      } catch (error) {
       console.error('Add product error:', error);
-      alert(error.message || 'Failed to add product');
+      addToast(error.message || 'Failed to add product', 'error');
     }
   };
 
@@ -86,11 +88,11 @@ const AdminProducts = () => {
         setEditingProduct(null);
         resetForm();
         fetchProducts();
-        alert('Product updated successfully!');
+        addToast('Product updated successfully!', 'success');
       }
     } catch (error) {
       console.error('Update product error:', error);
-      alert(error.message || 'Failed to update product');
+      addToast(error.message || 'Failed to update product', 'error');
     }
   };
 
@@ -100,11 +102,11 @@ const AdminProducts = () => {
         const response = await adminProductService.deleteProduct(productId);
         if (response.success) {
           fetchProducts();
-          alert('Product deleted successfully!');
+          addToast('Product deleted successfully!', 'success');
         }
       } catch (error) {
         console.error('Delete product error:', error);
-        alert(error.message || 'Failed to delete product');
+        addToast(error.message || 'Failed to delete product', 'error');
       }
     }
   };

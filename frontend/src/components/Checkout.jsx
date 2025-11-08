@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import cartService from '../services/cartService';
 import authService from '../services/authService';
+import { useNotification } from './Notification';
 
 const Checkout = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -20,6 +21,7 @@ const Checkout = () => {
   });
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
+  const { addToast } = useNotification();
 
   useEffect(() => {
     const loadCartAndUserData = async () => {
@@ -28,7 +30,7 @@ const Checkout = () => {
         
         // Check if user is authenticated
         if (!authService.isAuthenticated()) {
-          alert('Please login to proceed with checkout');
+          addToast('Please login to proceed with checkout', 'error');
           navigate('/');
           return;
         }
@@ -49,19 +51,19 @@ const Checkout = () => {
           setCartItems(cart.cart.items);
           calculateTotal(cart.cart.items);
         } else {
-          alert('Your cart is empty');
+          addToast('Your cart is empty', 'error');
           navigate('/');
         }
       } catch (error) {
         console.error('Error loading checkout data:', error);
-        alert('Error loading checkout data');
+        addToast('Error loading checkout data', 'error');
       } finally {
         setLoading(false);
       }
     };
 
     loadCartAndUserData();
-  }, [navigate]);
+  }, [navigate, addToast]);
 
   const calculateTotal = (items) => {
     // Prefer server-provided subtotal if available; fallback to price * quantity
@@ -132,7 +134,7 @@ const Checkout = () => {
       // Re-validate cart right before placing the order
       const latestCart = await cartService.getCart();
       if (!latestCart.success || !latestCart.cart || latestCart.cart.items.length === 0) {
-        alert('Your cart is empty. Please add items before placing the order.');
+        addToast('Your cart is empty. Please add items before placing the order.', 'error');
         navigate('/');
         return;
       }
@@ -176,14 +178,14 @@ const Checkout = () => {
       const result = await response.json();
       console.log('🧾 Order create response:', result);
 
-      if (response.ok && result.success) {
+  if (response.ok && result.success) {
         // Clear cart after successful order
         await cartService.clearCart();
         
         // Redirect to success page or show success message
         const orderId = result.order?._id;
         const orderNumber = result.order?.orderNumber;
-        alert(`Order placed successfully! ${orderNumber ? `Order No: ${orderNumber}` : ''}`);
+  addToast(`Order placed successfully! ${orderNumber ? `Order No: ${orderNumber}` : ''}`, 'success');
         navigate('/order-success', { 
           state: { 
             orderId,
@@ -193,11 +195,11 @@ const Checkout = () => {
         });
       } else {
         const serverMsg = [result.message, result.error].filter(Boolean).join(' - ');
-        alert(serverMsg || 'Failed to create order');
+        addToast(serverMsg || 'Failed to create order', 'error');
       }
     } catch (error) {
       console.error('Error placing order:', error);
-      alert('Error placing order. Please try again.');
+      addToast('Error placing order. Please try again.', 'error');
     } finally {
       setSubmitting(false);
     }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import cartService from '../services/cartService';
+import { useNotification } from './Notification';
 
 const Cart = ({ isOpen, onClose, user, isLoggedIn, cartUpdateTrigger }) => {
   const [cart, setCart] = useState(null);
@@ -8,6 +9,7 @@ const Cart = ({ isOpen, onClose, user, isLoggedIn, cartUpdateTrigger }) => {
   const [error, setError] = useState('');
   const [removingItems, setRemovingItems] = useState(new Set());
   const navigate = useNavigate();
+  const { addToast } = useNotification();
 
   // Load cart when component mounts, user changes, or cart updates
   useEffect(() => {
@@ -15,6 +17,21 @@ const Cart = ({ isOpen, onClose, user, isLoggedIn, cartUpdateTrigger }) => {
       loadCart();
     }
   }, [isOpen, isLoggedIn, user, cartUpdateTrigger]);
+
+  // Auto-close the cart popup when there are no items after loading
+  useEffect(() => {
+    if (
+      isOpen &&
+      isLoggedIn &&
+      user &&
+      !loading &&
+      cart &&
+      Array.isArray(cart.items) &&
+      cart.items.length === 0
+    ) {
+      onClose();
+    }
+  }, [isOpen, isLoggedIn, user, loading, cart, onClose]);
 
   const loadCart = async () => {
     try {
@@ -107,12 +124,12 @@ const Cart = ({ isOpen, onClose, user, isLoggedIn, cartUpdateTrigger }) => {
 
   const handleProceedToCheckout = () => {
     if (!isLoggedIn) {
-      alert('Please login to proceed to checkout');
+      addToast('Please login to proceed to checkout', 'error');
       return;
     }
 
     if (!cart || cart.totalItems === 0) {
-      alert('Your cart is empty. Please add items before checkout');
+      addToast('Your cart is empty. Please add items before checkout', 'error');
       return;
     }
 

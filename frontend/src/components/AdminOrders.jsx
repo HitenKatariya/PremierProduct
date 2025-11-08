@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminAuthService, adminOrderService } from '../services/adminService';
+import { useNotification } from './Notification';
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -15,6 +16,7 @@ const AdminOrders = () => {
   const [newStatus, setNewStatus] = useState('');
   const [statusComment, setStatusComment] = useState('');
   const navigate = useNavigate();
+  const { addToast } = useNotification();
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -57,11 +59,11 @@ const AdminOrders = () => {
         setNewStatus('');
         setStatusComment('');
         fetchOrders();
-        alert('Order status updated successfully!');
+        addToast('Order status updated successfully!', 'success');
       }
     } catch (error) {
       console.error('Update status error:', error);
-      alert(error.message || 'Failed to update order status');
+      addToast(error.message || 'Failed to update order status', 'error');
     }
   };
 

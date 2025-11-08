@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminAuthService, adminDashboardService } from '../services/adminService';
 
@@ -8,6 +8,43 @@ const AdminDashboard = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(''); // Clear any previous errors
+      
+      // Double-check authentication before making the API call
+      if (!adminAuthService.isAuthenticated()) {
+        navigate('/admin/login');
+        return;
+      }
+      
+      const response = await adminDashboardService.getDashboardOverview();
+      if (response.success) {
+        setDashboardData(response.data);
+      } else {
+        setError(response.message || 'Failed to load dashboard data');
+      }
+    } catch (error) {
+      console.error('Dashboard data fetch error:', error);
+      
+      // Check if it's an authentication error
+      if (error.success === false && (
+        error.message?.includes('expired') ||
+        error.message?.includes('denied') ||
+        error.message?.includes('invalid')
+      )) {
+        // Don't set error message, just redirect to login
+        navigate('/admin/login');
+        return;
+      }
+      
+      setError(error.message || 'Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  }, [navigate]);
+
   useEffect(() => {
     // Check authentication
     if (!adminAuthService.isAuthenticated()) {
@@ -16,22 +53,7 @@ const AdminDashboard = () => {
     }
 
     fetchDashboardData();
-  }, [navigate]);
-
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      const response = await adminDashboardService.getDashboardOverview();
-      if (response.success) {
-        setDashboardData(response.data);
-      }
-    } catch (error) {
-      console.error('Dashboard data fetch error:', error);
-      setError('Failed to load dashboard data');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [navigate, fetchDashboardData]);
 
   const handleLogout = async () => {
     await adminAuthService.logout();

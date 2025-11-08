@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import productService from '../services/productService';
 import cartService from '../services/cartService';
 import Login from './Login';
 import Signup from './Signup';
+import { useNotification } from './Notification';
 
-const Products = ({ user, isLoggedIn, onUpdateCartCount, showLogin, onOpenLogin, onCloseLogin, onLogin, handleSignup }) => {
+const Products = ({ isLoggedIn, onUpdateCartCount, showLogin, onOpenLogin, onCloseLogin, onLogin, handleSignup }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -15,6 +18,10 @@ const Products = ({ user, isLoggedIn, onUpdateCartCount, showLogin, onOpenLogin,
     category: '',
     search: ''
   });
+  const location = useLocation();
+  const [imageManifest, setImageManifest] = useState([]);
+  // Track manifest load (could be used for skeletons later); underscore prefix to bypass lint unused rule
+  const [_manifestLoaded, setManifestLoaded] = useState(false);
 
   const categories = [
     'All',
@@ -27,31 +34,90 @@ const Products = ({ user, isLoggedIn, onUpdateCartCount, showLogin, onOpenLogin,
   ];
 
   useEffect(() => {
+    // Initialize selected category from query params (e.g., /products?category=pressure%20gauge%20parts)
+    const params = new URLSearchParams(location.search);
+    const categoryFromQuery = params.get('category');
+    if (categoryFromQuery && categoryFromQuery !== filters.category) {
+      setFilters(prev => ({ ...prev, category: categoryFromQuery }));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
+
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        
+        const filterParams = {
+          ...filters,
+          category: filters.category === 'All' ? '' : filters.category,
+          limit: 100 // Set high limit to show all products
+        };
+        
+        const result = await productService.getProducts(filterParams);
+        if (result.success) {
+          setProducts(result.products);
+        }
+      } catch (error) {
+        setError(error.message || 'Failed to load products');
+        console.error('Load products error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadProducts();
   }, [filters]);
 
-  const loadProducts = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      
-      const filterParams = {
-        ...filters,
-        category: filters.category === 'All' ? '' : filters.category,
-        limit: 100 // Set high limit to show all products
-      };
-      
-      const result = await productService.getProducts(filterParams);
-      if (result.success) {
-        setProducts(result.products);
+  // Load local premium images manifest (static assets in public folder)
+  useEffect(() => {
+    const loadManifest = async () => {
+      try {
+        const res = await fetch('/images/products/pressure-gauge-parts/premium/manifest.json');
+        if (!res.ok) throw new Error('Failed to load image manifest');
+        const data = await res.json();
+        setImageManifest(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.warn('Image manifest load issue:', e.message);
+      } finally {
+        setManifestLoaded(true);
       }
-    } catch (error) {
-      setError(error.message || 'Failed to load products');
-      console.error('Load products error:', error);
-    } finally {
-      setLoading(false);
-    }
+    };
+    loadManifest();
+  }, []);
+
+  // Helper: build slug for loose matching between product name and filename
+  const slugify = (str = '') => str.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, '-');
+
+  // Pre-compute mapping for faster lookups
+  // Previously used for slug/fuzzy matching; retained (prefixed) for future enhancements
+  const _filenameIndexBySlug = useMemo(() => {
+    const map = {};
+    imageManifest.forEach((fname) => {
+      const base = fname.replace(/\.(avif|webp|jpe?g|png)$/i, '');
+      map[slugify(base)] = fname;
+    });
+    return map;
+  }, [imageManifest]);
+
+  const getImageForProduct = (product, idx) => {
+    // Simple deterministic assignment by index for reliability
+    if (!imageManifest.length) return 'https://via.placeholder.com/300x200?text=Product';
+    const assigned = imageManifest[idx % imageManifest.length];
+    return `/images/products/pressure-gauge-parts/premium/${encodeURIComponent(assigned)}`;
   };
+
+  const handleImgError = (e) => {
+    e.currentTarget.src = 'https://via.placeholder.com/300x200?text=Image+Not+Found';
+    e.currentTarget.onerror = null; // prevent infinite loop
+  };
+
+  const handleRetry = () => {
+    window.location.reload(); // Simple retry by reloading the page
+  };
+
+  const { addToast } = useNotification();
 
   const handleAddToCart = async (product) => {
     if (!isLoggedIn) {
@@ -59,7 +125,7 @@ const Products = ({ user, isLoggedIn, onUpdateCartCount, showLogin, onOpenLogin,
       if (onOpenLogin) {
         onOpenLogin();
       } else {
-        alert('Please login to add items to cart');
+        addToast('Please login to add items to cart', 'error');
       }
       return;
     }
@@ -76,14 +142,14 @@ const Products = ({ user, isLoggedIn, onUpdateCartCount, showLogin, onOpenLogin,
       const result = await cartService.addToCart(product._id, quantity);
       
       if (result.success) {
-        alert(`${quantity} × ${product.name} added to cart!`);
+        addToast(`${quantity} × ${product.name} added to cart!`, 'success');
         if (onUpdateCartCount) {
           onUpdateCartCount();
         }
         setQuantityModal({ show: false, product: null, quantity: 1 });
       }
     } catch (error) {
-      alert(error.message || 'Failed to add item to cart');
+      addToast(error.message || 'Failed to add item to cart', 'error');
       console.error('Add to cart error:', error);
     } finally {
       setAddingToCart(null);
@@ -256,7 +322,7 @@ const Products = ({ user, isLoggedIn, onUpdateCartCount, showLogin, onOpenLogin,
           <div className="text-center py-12">
             <p className="text-red-600 mb-4">{error}</p>
             <button
-              onClick={loadProducts}
+              onClick={handleRetry}
               className="bg-blue-700 text-white px-6 py-2 rounded-lg hover:bg-blue-800 transition-colors"
             >
               Retry
@@ -269,15 +335,24 @@ const Products = ({ user, isLoggedIn, onUpdateCartCount, showLogin, onOpenLogin,
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <div key={product._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                <img
-                  src={product.image || 'https://via.placeholder.com/300x200?text=Product'}
-                  alt={product.name}
-                  className="w-full h-48 object-cover"
-                />
+            {products.map((product, idx) => (
+              <div 
+                key={product._id} 
+                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+              >
+                <Link to={`/product/${product._id}`} className="block">
+                  <img
+                    src={getImageForProduct(product, idx)}
+                    alt={product.name}
+                    onError={handleImgError}
+                    loading="lazy"
+                    className="w-full h-48 object-cover bg-gray-100"
+                  />
+                </Link>
                 <div className="p-4">
-                  <h3 className="font-bold text-lg text-gray-800 mb-2">{product.name}</h3>
+                  <Link to={`/product/${product._id}`} className="block">
+                    <h3 className="font-bold text-lg text-gray-800 mb-2">{product.name}</h3>
+                  </Link>
                   <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
                   
                   <div className="flex items-center justify-between mb-3">

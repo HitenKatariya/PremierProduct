@@ -58,9 +58,10 @@ const adminAuth = async (req, res, next) => {
     }
     
     if (error.name === 'TokenExpiredError') {
+      console.log(`🔐 Admin token expired for token issued at: ${new Date(error.expiredAt).toISOString()}`);
       return res.status(401).json({
         success: false,
-        message: 'Access denied. Admin token expired.'
+        message: 'Access denied. Admin token expired. Please login again.'
       });
     }
 
