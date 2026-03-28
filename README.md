@@ -2,8 +2,6 @@
 
 <div align="center">
 
-![Premier Product Logo](https://via.placeholder.com/200x100/4F46E5/FFFFFF?text=Premier+Product)
-
 **A Full-Stack E-Commerce Platform Built with Modern Technologies**
 
 [![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
