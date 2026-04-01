@@ -14,6 +14,7 @@ import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import AdminProducts from './components/AdminProducts';
 import AdminOrders from './components/AdminOrders';
+import APIShowcase from './components/APIShowcase';
 import authService from './services/authService';
 import { NotificationProvider, useNotification } from './components/Notification';
 
@@ -232,7 +233,8 @@ function AppContent() {
             element={<OrderSuccess />} 
           />
           <Route path="/contact" element={<Contact />} />
-          
+          <Route path="/api-showcase" element={<APIShowcase />} />
+
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />

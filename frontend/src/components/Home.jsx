@@ -166,7 +166,7 @@ const Home = ({ isLoggedIn, onLogin, showLogin, onOpenLogin, onCloseLogin, handl
                         src={`${imageBasePath}/${encodeURIComponent(cat.file)}`}
                         alt={cat.name}
                         loading="lazy"
-                        onError={(e) => { e.currentTarget.src = 'https://via.placeholder.com/400x250?text=Image'; e.currentTarget.onerror = null; }}
+                        onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1581092295338-a2c6c3c58a2b?w=400&h=250&fit=crop'; e.currentTarget.onerror = null; }}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                     </div>
