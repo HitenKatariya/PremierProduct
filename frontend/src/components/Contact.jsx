@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import authService from "../services/authService";
+import API_BASE_URL from "../config/api";
 import { useNotification } from './Notification';
 
 const Contact = () => {
+  const location = useLocation();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -13,15 +16,16 @@ const Contact = () => {
   // Get user info when component mounts
   useEffect(() => {
     const user = authService.getCurrentUser();
-    console.log('Contact: Current user data:', user); // Debug log
-    if (user) {
-      setFormData(prev => ({
-        ...prev,
-        name: user.name || "",
-        email: user.email || ""
-      }));
-    }
-  }, []);
+    const params = new URLSearchParams(location.search);
+    const subjectFromQuery = params.get("subject");
+
+    setFormData(prev => ({
+      ...prev,
+      name: user?.name || prev.name,
+      email: user?.email || prev.email,
+      subject: subjectFromQuery || prev.subject,
+    }));
+  }, [location.search]);
 
   const handleChange = (e) => {
     setFormData({
@@ -42,7 +46,7 @@ const Contact = () => {
     }
     
     try {
-      const response = await fetch('http://localhost:3004/api/contact', {
+      const response = await fetch(`${API_BASE_URL}/contact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -52,7 +56,7 @@ const Contact = () => {
 
       const data = await response.json();
 
-      if (data.success) {
+      if (response.ok && data.success) {
         addToast(data.message || 'Message sent successfully!', 'success');
         // Clear form
         setFormData({ name: "", email: "", subject: "", message: "" });

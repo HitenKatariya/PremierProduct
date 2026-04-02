@@ -1,6 +1,7 @@
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 
-const API_URL = 'http://localhost:3004/api';
+const API_URL = `${API_BASE_URL}/products`;
 
 const productService = {
   // Get all products with optional filters
@@ -13,7 +14,7 @@ const productService = {
       if (filters.page) params.append('page', filters.page);
       if (filters.limit) params.append('limit', filters.limit);
 
-      const response = await axios.get(`${API_URL}/products?${params.toString()}`);
+      const response = await axios.get(`${API_URL}?${params.toString()}`);
       return response.data;
     } catch (error) {
       console.error('Get products error:', error);
@@ -24,7 +25,7 @@ const productService = {
   // Get single product by ID
   getProduct: async (productId) => {
     try {
-      const response = await axios.get(`${API_URL}/products/${productId}`);
+      const response = await axios.get(`${API_URL}/${productId}`);
       return response.data;
     } catch (error) {
       console.error('Get product error:', error);
@@ -35,7 +36,7 @@ const productService = {
   // Seed sample products (for testing)
   seedProducts: async () => {
     try {
-      const response = await axios.post(`${API_URL}/products/seed`);
+      const response = await axios.post(`${API_URL}/seed`);
       return response.data;
     } catch (error) {
       console.error('Seed products error:', error);

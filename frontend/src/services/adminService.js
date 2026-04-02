@@ -1,7 +1,9 @@
 import axios from 'axios';
+import API_BASE_ROOT from "../config/api";
 
-const API_BASE_URL = 'http://localhost:3004/api/admin';
-const AUTH_API_URL = 'http://localhost:3004/api/admin/auth';
+// Use the same API root as the rest of the app (derived from VITE_API_URL, e.g. https://premierproduct-iyi9.onrender.com/api)
+const API_BASE_URL = `${API_BASE_ROOT}/admin`;
+const AUTH_API_URL = `${API_BASE_ROOT}/admin/auth`;
 
 // Get auth token from localStorage
 const getAdminToken = () => {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import cartService from '../services/cartService';
 import authService from '../services/authService';
+import API_BASE_URL from '../config/api';
 import { useNotification } from './Notification';
 
 const Checkout = () => {
@@ -166,7 +167,7 @@ const Checkout = () => {
       };
 
       // Place order via API
-      const response = await fetch('http://localhost:3004/api/orders', {
+      const response = await fetch(`${API_BASE_URL}/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -415,10 +416,14 @@ const Checkout = () => {
                   <div key={pid} className="flex items-center space-x-4 p-3 border border-gray-200 rounded-lg">
                     <div className="w-16 h-16 bg-gray-100 rounded-md flex items-center justify-center">
                       {image ? (
-                        <img 
-                          src={`http://localhost:3004${image}`} 
+                        <img
+                          src={image}
                           alt={name}
                           className="w-14 h-14 object-cover rounded-md"
+                          onError={(e) => {
+                            e.currentTarget.classList.add('hidden');
+                            e.currentTarget.onerror = null;
+                          }}
                         />
                       ) : (
                         <span className="text-2xl text-gray-400">📦</span>

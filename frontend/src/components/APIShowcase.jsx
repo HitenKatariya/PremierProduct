@@ -100,10 +100,10 @@ const APIShowcase = () => {
         <div className="mb-12 text-center">
           <h1 className="text-4xl font-bold text-white mb-4">🚀 API Endpoints Showcase</h1>
           <p className="text-gray-300 text-lg">
-            Premier Products Backend - Running on localhost:5000
+            Premier Products Backend - Running on Render (premierproduct-iyi9.onrender.com)
           </p>
           <div className="mt-4 inline-block bg-blue-900 text-blue-100 px-4 py-2 rounded-lg">
-            <code className="text-sm">http://localhost:5000/api</code>
+            <code className="text-sm">https://premierproduct-iyi9.onrender.com/api</code>
           </div>
         </div>
 
@@ -184,7 +184,7 @@ const APIShowcase = () => {
               <p className="text-blue-300 font-semibold mb-2">Get All Products</p>
               <pre className="bg-gray-900 text-green-400 p-3 rounded text-xs overflow-x-auto">
 {`curl -X GET \\
-  "http://localhost:5000/api/products"`}
+  "https://premierproduct-iyi9.onrender.com/api/products"`}
               </pre>
             </div>
 
@@ -193,7 +193,7 @@ const APIShowcase = () => {
               <p className="text-blue-300 font-semibold mb-2">Register User</p>
               <pre className="bg-gray-900 text-green-400 p-3 rounded text-xs overflow-x-auto">
 {`curl -X POST \\
-  "http://localhost:5000/api/users/register" \\
+  "https://premierproduct-iyi9.onrender.com/api/users/register" \\
   -H "Content-Type: application/json" \\
   -d '{"name":"John","email":"john@example.com","password":"pass123"}'`}
               </pre>
@@ -204,7 +204,7 @@ const APIShowcase = () => {
               <p className="text-blue-300 font-semibold mb-2">Get User Cart</p>
               <pre className="bg-gray-900 text-green-400 p-3 rounded text-xs overflow-x-auto">
 {`curl -X GET \\
-  "http://localhost:5000/api/cart" \\
+  "https://premierproduct-iyi9.onrender.com/api/cart" \\
   -H "Authorization: Bearer TOKEN"`}
               </pre>
             </div>
@@ -214,7 +214,7 @@ const APIShowcase = () => {
               <p className="text-blue-300 font-semibold mb-2">Create Order</p>
               <pre className="bg-gray-900 text-green-400 p-3 rounded text-xs overflow-x-auto">
 {`curl -X POST \\
-  "http://localhost:5000/api/orders" \\
+  "https://premierproduct-iyi9.onrender.com/api/orders" \\
   -H "Authorization: Bearer TOKEN" \\
   -H "Content-Type: application/json" \\
   -d '{"shippingAddress":"123 Main St"}'`}
@@ -227,7 +227,7 @@ const APIShowcase = () => {
         <div className="bg-blue-900 border border-blue-700 rounded-lg p-6">
           <div className="text-center">
             <h4 className="text-blue-200 text-sm font-semibold mb-2">BASE URL</h4>
-            <code className="text-white text-lg font-bold">http://localhost:5000/api</code>
+            <code className="text-white text-lg font-bold">https://premierproduct-iyi9.onrender.com/api</code>
             <p className="text-blue-300 text-sm mt-3">
               ✅ Connected from Frontend (port 5173) via <code className="bg-blue-800 px-2 py-1 rounded">VITE_API_URL</code>
             </p>
@@ -236,7 +236,7 @@ const APIShowcase = () => {
 
         {/* Footer */}
         <div className="text-center mt-12 text-gray-400 text-sm">
-          <p>🔗 Frontend: http://localhost:5173</p>
+          <p>🔗 Frontend: https://premier-product.vercel.app</p>
           <p className="mt-2">For detailed documentation, see <code className="bg-gray-700 px-2 py-1 rounded">API_ENDPOINTS.md</code></p>
         </div>
       </div>

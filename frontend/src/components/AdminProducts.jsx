@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminAuthService, adminProductService } from '../services/adminService';
+import API_BASE_ROOT from "../config/api";
 import { useNotification } from './Notification';
 
 const AdminProducts = () => {
@@ -24,6 +25,9 @@ const AdminProducts = () => {
   const [pagination, setPagination] = useState(null);
   const navigate = useNavigate();
   const { addToast } = useNotification();
+
+  // Derive API origin from API root (e.g. https://premierproduct-iyi9.onrender.com/api)
+  const API_ORIGIN = API_BASE_ROOT.replace(/\/api\/?$/, "");
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -140,6 +144,12 @@ const AdminProducts = () => {
     }).format(amount);
   };
 
+  const getProductImageUrl = (product) => {
+    if (!product?.image) return "";
+    if (product.image.startsWith("http")) return product.image;
+    return `${API_ORIGIN}${product.image}`;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -253,7 +263,7 @@ const AdminProducts = () => {
                             <div className="flex-shrink-0 h-10 w-10">
                               <img
                                 className="h-10 w-10 rounded-full object-cover"
-                                src={`http://localhost:3001${product.image}`}
+                                src={getProductImageUrl(product)}
                                 alt={product.name}
                               />
                             </div>

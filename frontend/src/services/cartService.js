@@ -1,6 +1,7 @@
 import axios from 'axios';
+import API_BASE_URL from '../config/api';
 
-const API_URL = 'http://localhost:3004/api';
+const API_URL = `${API_BASE_URL}/cart`;
 
 // Get auth token from localStorage
 const getAuthToken = () => {
@@ -20,7 +21,7 @@ const cartService = {
       console.log('📦 Getting cart...');
       console.log('🔑 Auth token:', getAuthToken() ? 'EXISTS' : 'MISSING');
       
-      const response = await axios.get(`${API_URL}/cart`, {
+      const response = await axios.get(`${API_URL}`, {
         headers: createAuthHeader()
       });
       
@@ -38,7 +39,7 @@ const cartService = {
       console.log('🛒 Adding to cart:', { productId, quantity });
       console.log('🔑 Auth token:', getAuthToken() ? 'EXISTS' : 'MISSING');
       
-      const response = await axios.post(`${API_URL}/cart/add`, {
+      const response = await axios.post(`${API_URL}/add`, {
         productId,
         quantity
       }, {
@@ -56,7 +57,7 @@ const cartService = {
   // Update item quantity in cart
   updateCartItem: async (productId, quantity) => {
     try {
-      const response = await axios.put(`${API_URL}/cart/update`, {
+      const response = await axios.put(`${API_URL}/update`, {
         productId,
         quantity
       }, {
@@ -72,7 +73,7 @@ const cartService = {
   // Remove item from cart
   removeFromCart: async (productId) => {
     try {
-      const response = await axios.delete(`${API_URL}/cart/remove/${productId}`, {
+      const response = await axios.delete(`${API_URL}/remove/${productId}`, {
         headers: createAuthHeader()
       });
       return response.data;
@@ -85,7 +86,7 @@ const cartService = {
   // Clear entire cart
   clearCart: async () => {
     try {
-      const response = await axios.delete(`${API_URL}/cart/clear`, {
+      const response = await axios.delete(`${API_URL}/clear`, {
         headers: createAuthHeader()
       });
       return response.data;
@@ -98,7 +99,7 @@ const cartService = {
   // Get cart item count (for navbar badge)
   getCartCount: async () => {
     try {
-      const response = await axios.get(`${API_URL}/cart/count`, {
+      const response = await axios.get(`${API_URL}/count`, {
         headers: createAuthHeader()
       });
       return response.data;

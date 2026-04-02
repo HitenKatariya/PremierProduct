@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminAuthService, adminOrderService } from '../services/adminService';
+import { API_ORIGIN } from '../config/api';
 import { useNotification } from './Notification';
 
 const AdminOrders = () => {
@@ -374,7 +375,7 @@ const AdminOrders = () => {
                           <td className="px-4 py-3">
                             <div className="flex items-center">
                               {item.productImage && (
-                                <img src={`http://localhost:3004${item.productImage}`} alt={item.productName} className="w-12 h-12 object-cover rounded mr-3" />
+                                <img src={`${API_ORIGIN}${item.productImage}`} alt={item.productName} className="w-12 h-12 object-cover rounded mr-3" />
                               )}
                               <div>
                                 <div className="text-sm font-medium text-gray-900">{item.productName}</div>
