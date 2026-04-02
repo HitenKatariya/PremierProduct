@@ -14,28 +14,27 @@ const contactRoutes = require("./routes/contactRoutes");
 
 const app = express();
 
-// CORS configuration for production
-// ✅ Better CORS
+// CORS configuration
+// Allow local dev + deployed frontend (Vercel), with optional extra origin via CORS_ORIGIN
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://premier-product.vercel.app"
-];
+  "https://premier-product.vercel.app",
+  process.env.CORS_ORIGIN
+].filter(Boolean);
 
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
+    // Allow non-browser clients (no Origin header) and known frontends
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  credentials: true
-}));
-const corsOptions = {
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   credentials: true,
   optionsSuccessStatus: 200
 };
+
 app.use(cors(corsOptions));
 app.use(express.json());
 
