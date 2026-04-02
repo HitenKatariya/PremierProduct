@@ -4,7 +4,7 @@ import authService from "../services/authService";
 export default function Signup({ onSignupSuccess, onClose, onSwitchToLogin }) {
   const [form, setForm] = useState({ username: "", email: "", password: "" });
   const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // Add loading state
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -12,330 +12,160 @@ export default function Signup({ onSignupSuccess, onClose, onSwitchToLogin }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Prevent double submission
-    if (isLoading) {
-      console.log("⚠️ Already submitting, ignoring duplicate request");
-      return;
-    }
-    
-    setIsLoading(true); // Set loading state
-    console.log("🚀 Form submitting...", form);
-    setMessage("Creating account..."); // Show loading state
-    
+
+    if (isLoading) return;
+
+    setIsLoading(true);
+    setMessage("Creating account...");
+
     try {
-      const result = await authService.register(form.username, form.email, form.password);
-      console.log("✅ Registration response:", result);
-      
+      const result = await authService.register(
+        form.username,
+        form.email,
+        form.password
+      );
+
       if (result.success) {
         setMessage("✅ " + result.message);
         setForm({ username: "", email: "", password: "" });
 
-        // Call success callback to update parent state and redirect
         if (onSignupSuccess) {
           setTimeout(() => {
             onSignupSuccess({
               user: result.user,
-              token: result.token
+              token: result.token,
             });
-            onClose && onClose(); // Close modal/form
-          }, 1500); // Show success message briefly before redirecting
+            onClose && onClose();
+          }, 800);
         }
       } else {
         setMessage("❌ " + result.message);
       }
     } catch (err) {
-      console.error("❌ Registration error:", err);
-      const errorMessage = "Error signing up";
-      setMessage("❌ " + errorMessage);
+      console.error("Registration error:", err);
+      setMessage("❌ Error signing up");
     } finally {
-      setIsLoading(false); // Reset loading state
+      setIsLoading(false);
     }
   };
 
+  const isSuccess = message.includes("✅");
+
   return (
-    <div style={{
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      minHeight: "100vh",
-      backgroundColor: "#f8fafc",
-      padding: "20px"
-    }}>
-      <div style={{
-        backgroundColor: "#ffffff",
-        padding: "40px",
-        borderRadius: "16px",
-        boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-        width: "100%",
-        maxWidth: "400px",
-        textAlign: "center",
-        border: "1px solid #e2e8f0",
-        position: "relative"
-      }}>
-        {/* Close Button */}
-        {onClose && (
-          <button
-            onClick={onClose}
-            style={{
-              position: "absolute",
-              top: "15px",
-              right: "15px",
-              background: "none",
-              border: "none",
-              fontSize: "24px",
-              color: "#9ca3af",
-              cursor: "pointer",
-              width: "30px",
-              height: "30px",
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "all 0.2s ease"
+    <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-200 px-8 pt-8 pb-6 relative">
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-4 text-gray-400 hover:text-gray-700 hover:bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+        >
+          ×
+        </button>
+      )}
+
+      <div className="mb-8 text-center">
+        <div className="flex justify-center mb-4">
+          <img
+            src="/premier_products_logo_new.svg"
+            alt="Premier Products Logo"
+            className="h-10 w-auto object-contain"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
             }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = "#f3f4f6";
-              e.target.style.color = "#374151";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = "transparent";
-              e.target.style.color = "#9ca3af";
-            }}
-          >
-            ×
-          </button>
-        )}
-        <div style={{ marginBottom: "30px" }}>
-          <h2 style={{ 
-            color: "#1a202c", 
-            marginBottom: "8px", 
-            fontSize: "28px",
-            fontWeight: "700"
-          }}>
-            Create Account
-          </h2>
-          <p style={{ 
-            color: "#64748b", 
-            fontSize: "16px",
-            margin: "0"
-          }}>
-            Join Premier Products today
-          </p>
+          />
         </div>
-
-        <form onSubmit={handleSubmit} style={{ marginBottom: "24px" }}>
-          <div style={{ marginBottom: "20px", textAlign: "left" }}>
-            <label style={{ 
-              display: "block", 
-              marginBottom: "8px", 
-              fontSize: "14px", 
-              fontWeight: "600",
-              color: "#374151"
-            }}>
-              Full Name
-            </label>
-            <input
-              type="text"
-              name="username"
-              placeholder="Enter your full name"
-              value={form.username}
-              onChange={handleChange}
-              required
-              style={{
-                ...inputStyle,
-                fontSize: "16px"
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: "20px", textAlign: "left" }}>
-            <label style={{ 
-              display: "block", 
-              marginBottom: "8px", 
-              fontSize: "14px", 
-              fontWeight: "600",
-              color: "#374151"
-            }}>
-              Email Address
-            </label>
-            <input
-              type="email"
-              name="email"
-              placeholder="Enter your email"
-              value={form.email}
-              onChange={handleChange}
-              required
-              style={{
-                ...inputStyle,
-                fontSize: "16px"
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: "24px", textAlign: "left" }}>
-            <label style={{ 
-              display: "block", 
-              marginBottom: "8px", 
-              fontSize: "14px", 
-              fontWeight: "600",
-              color: "#374151"
-            }}>
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              placeholder="Create a password (min 6 characters)"
-              value={form.password}
-              onChange={handleChange}
-              required
-              style={{
-                ...inputStyle,
-                fontSize: "16px"
-              }}
-            />
-            <p style={{ 
-              fontSize: "12px", 
-              color: "#64748b",
-              margin: "4px 0 0 0",
-              textAlign: "left"
-            }}>
-              Must be at least 6 characters long
-            </p>
-          </div>
-
-          <button 
-            type="submit" 
-            disabled={isLoading}
-            style={{
-              ...buttonStyle,
-              opacity: isLoading ? 0.7 : 1,
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              fontSize: "16px",
-              fontWeight: "600",
-              transform: isLoading ? 'none' : 'translateY(0)',
-              transition: "all 0.2s ease"
-            }}
-            onMouseEnter={(e) => {
-              if (!isLoading) {
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = '0 8px 20px rgba(16, 185, 129, 0.4)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isLoading) {
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.2)';
-              }
-            }}
-          >
-            {isLoading ? (
-              <span style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ 
-                  display: "inline-block", 
-                  width: "20px", 
-                  height: "20px", 
-                  border: "2px solid #ffffff", 
-                  borderTop: "2px solid transparent", 
-                  borderRadius: "50%", 
-                  animation: "spin 1s linear infinite",
-                  marginRight: "8px"
-                }}></span>
-                Creating Account...
-              </span>
-            ) : "Create Account"}
-          </button>
-        </form>
-
-        {message && (
-          <div style={{ 
-            marginBottom: "20px",
-            padding: "12px",
-            borderRadius: "8px",
-            fontSize: "14px",
-            fontWeight: "500",
-            backgroundColor: message.includes("✅") ? "#f0f9ff" : "#fef2f2",
-            color: message.includes("✅") ? "#0369a1" : "#dc2626",
-            border: `1px solid ${message.includes("✅") ? "#bae6fd" : "#fecaca"}`
-          }}>
-            {message}
-          </div>
-        )}
-
-        <div style={{ 
-          paddingTop: "20px", 
-          borderTop: "1px solid #e2e8f0",
-          fontSize: "14px"
-        }}>
-          <p style={{ 
-            color: "#64748b", 
-            margin: "0 0 12px 0"
-          }}>
-            Already have an account?
-          </p>
-          <button 
-            onClick={() => {
-              onClose && onClose();
-              onSwitchToLogin && onSwitchToLogin();
-            }}
-            style={{
-              background: "none",
-              border: "none",
-              color: "#10b981",
-              fontSize: "14px",
-              fontWeight: "600",
-              cursor: "pointer",
-              padding: "8px 16px",
-              borderRadius: "6px",
-              transition: "all 0.2s ease"
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = "#f0fdf4";
-              e.target.style.textDecoration = "underline";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = "transparent";
-              e.target.style.textDecoration = "none";
-            }}
-          >
-            Sign In Here →
-          </button>
-        </div>
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
+          Create Account
+        </h2>
+        <p className="text-sm text-gray-500">Join Premier Products today</p>
       </div>
 
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
+      <form onSubmit={handleSubmit} className="space-y-5 mb-4">
+        <div className="text-left">
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            Full Name
+          </label>
+          <input
+            type="text"
+            name="username"
+            placeholder="Enter your full name"
+            value={form.username}
+            onChange={handleChange}
+            required
+            className="w-full px-3.5 py-2.5 rounded-lg border-2 border-gray-200 focus:border-green-600 focus:ring-2 focus:ring-green-100 outline-none text-sm sm:text-base"
+          />
+        </div>
+
+        <div className="text-left">
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            Email Address
+          </label>
+          <input
+            type="email"
+            name="email"
+            placeholder="Enter your email"
+            value={form.email}
+            onChange={handleChange}
+            required
+            className="w-full px-3.5 py-2.5 rounded-lg border-2 border-gray-200 focus:border-green-600 focus:ring-2 focus:ring-green-100 outline-none text-sm sm:text-base"
+          />
+        </div>
+
+        <div className="text-left">
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">
+            Password
+          </label>
+          <input
+            type="password"
+            name="password"
+            placeholder="Create a password (min 6 characters)"
+            value={form.password}
+            onChange={handleChange}
+            required
+            className="w-full px-3.5 py-2.5 rounded-lg border-2 border-gray-200 focus:border-green-600 focus:ring-2 focus:ring-green-100 outline-none text-sm sm:text-base"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Must be at least 6 characters long
+          </p>
+        </div>
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed transition-all"
+        >
+          {isLoading && (
+            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          )}
+          {isLoading ? "Creating Account..." : "Create Account"}
+        </button>
+      </form>
+
+      {message && (
+        <div
+          className={`mb-4 rounded-lg px-3 py-2 text-sm font-medium border ${
+            isSuccess
+              ? "bg-green-50 text-green-800 border-green-200"
+              : "bg-red-50 text-red-700 border-red-200"
+          }`}
+        >
+          {message}
+        </div>
+      )}
+
+      <div className="pt-4 border-t border-gray-200 text-center text-sm">
+        <p className="text-gray-500 mb-2">Already have an account?</p>
+        <button
+          type="button"
+          onClick={() => {
+            onClose && onClose();
+            onSwitchToLogin && onSwitchToLogin();
+          }}
+          className="inline-flex items-center justify-center px-3 py-1.5 rounded-md text-green-600 font-semibold hover:bg-green-50 transition-colors"
+        >
+          Sign In Here →
+        </button>
+      </div>
     </div>
   );
 }
-
-const inputStyle = {
-  width: "100%",
-  padding: "14px 16px",
-  marginBottom: "0",
-  border: "2px solid #e2e8f0",
-  borderRadius: "8px",
-  fontSize: "16px",
-  transition: "all 0.2s ease",
-  outline: "none",
-  backgroundColor: "#ffffff"
-};
-
-const buttonStyle = {
-  width: "100%",
-  padding: "14px 24px",
-  backgroundColor: "#10b981",
-  color: "#ffffff",
-  border: "none",
-  borderRadius: "8px",
-  cursor: "pointer",
-  fontSize: "16px",
-  fontWeight: "600",
-  boxShadow: "0 4px 12px rgba(16, 185, 129, 0.2)",
-  transition: "all 0.2s ease"
-};

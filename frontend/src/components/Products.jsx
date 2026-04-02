@@ -102,14 +102,18 @@ const Products = ({ isLoggedIn, onUpdateCartCount, showLogin, onOpenLogin, onClo
   }, [imageManifest]);
 
   const getImageForProduct = (product, idx) => {
-    // Simple deterministic assignment by index for reliability
-    if (!imageManifest.length) return 'https://via.placeholder.com/300x200?text=Product';
+    // Prefer the image stored with the product (Cloudinary URL from backend)
+    if (product && product.image) return product.image;
+
+    // Fallback: use local premium manifest image if available
+    if (!imageManifest.length) return '';
     const assigned = imageManifest[idx % imageManifest.length];
     return `/images/products/pressure-gauge-parts/premium/${encodeURIComponent(assigned)}`;
   };
 
   const handleImgError = (e) => {
-    e.currentTarget.src = 'https://via.placeholder.com/300x200?text=Image+Not+Found';
+    // If the main image fails, simply hide it instead of using external placeholders
+    e.currentTarget.classList.add('hidden');
     e.currentTarget.onerror = null; // prevent infinite loop
   };
 

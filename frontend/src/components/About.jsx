@@ -1,6 +1,32 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from "react-router-dom";
+import productService from "../services/productService";
 
 const About = () => {
+  const [storyImage, setStoryImage] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadStoryImage = async () => {
+      try {
+        const res = await productService.getProducts({ limit: 50 });
+        if (res.success && Array.isArray(res.products)) {
+          const firstWithImage = res.products.find((p) => p.image);
+          if (firstWithImage) {
+            setStoryImage(firstWithImage.image);
+          }
+        }
+      } catch (err) {
+        console.error("About story image load error:", err);
+      }
+    };
+
+    loadStoryImage();
+  }, []);
+
+  const fallbackStoryImage =
+    "https://images.unsplash.com/photo-1581090700227-1e37b190418e?w=800&h=600&fit=crop";
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -51,9 +77,16 @@ const About = () => {
             </div>
             <div className="lg:order-last">
               <img 
-                src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=400&fit=crop" 
-                alt="Manufacturing facility" 
+                src={storyImage || fallbackStoryImage}
+                alt="Premier Products brass parts and components" 
                 className="rounded-lg shadow-lg w-full h-96 object-cover"
+                onError={(e) => {
+                  if (e.currentTarget.src !== fallbackStoryImage) {
+                    e.currentTarget.src = fallbackStoryImage;
+                  } else {
+                    e.currentTarget.classList.add("hidden");
+                  }
+                }}
               />
             </div>
           </div>
@@ -149,57 +182,6 @@ const About = () => {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-800 mb-4">Leadership Team</h2>
-            <p className="text-gray-600 text-lg">Meet the experts driving our success</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <img 
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face" 
-                alt="CEO" 
-                className="w-48 h-48 rounded-full mx-auto mb-6 object-cover shadow-lg"
-              />
-              <h3 className="text-xl font-bold text-gray-800 mb-2">John Anderson</h3>
-              <p className="text-blue-700 font-medium mb-3">Chief Executive Officer</p>
-              <p className="text-gray-600 text-sm">
-                25+ years of experience in manufacturing and business leadership. 
-                Drives strategic vision and operational excellence.
-              </p>
-            </div>
-            <div className="text-center">
-              <img 
-                src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=300&h=300&fit=crop&crop=face" 
-                alt="CTO" 
-                className="w-48 h-48 rounded-full mx-auto mb-6 object-cover shadow-lg"
-              />
-              <h3 className="text-xl font-bold text-gray-800 mb-2">Sarah Chen</h3>
-              <p className="text-blue-700 font-medium mb-3">Chief Technology Officer</p>
-              <p className="text-gray-600 text-sm">
-                Expert in advanced manufacturing technologies and quality systems. 
-                Leads innovation and technical excellence initiatives.
-              </p>
-            </div>
-            <div className="text-center">
-              <img 
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face" 
-                alt="COO" 
-                className="w-48 h-48 rounded-full mx-auto mb-6 object-cover shadow-lg"
-              />
-              <h3 className="text-xl font-bold text-gray-800 mb-2">Michael Rodriguez</h3>
-              <p className="text-blue-700 font-medium mb-3">Chief Operations Officer</p>
-              <p className="text-gray-600 text-sm">
-                Oversees production, supply chain, and quality assurance. 
-                Ensures efficient operations and customer satisfaction.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Manufacturing Excellence */}
       <section className="py-16 bg-blue-900 text-white">
         <div className="container mx-auto px-4">
@@ -257,10 +239,16 @@ const About = () => {
             Let's build something great together.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-blue-700 hover:bg-gray-100 px-8 py-3 rounded-lg font-bold transition-colors">
+            <button
+              onClick={() => navigate('/contact?subject=Quotation%20Request')}
+              className="bg-white text-blue-700 hover:bg-gray-100 px-8 py-3 rounded-lg font-bold transition-colors"
+            >
               Get Quote
             </button>
-            <button className="border-2 border-white text-white hover:bg-white hover:text-blue-700 px-8 py-3 rounded-lg font-bold transition-colors">
+            <button
+              onClick={() => navigate('/contact')}
+              className="border-2 border-white text-white hover:bg-white hover:text-blue-700 px-8 py-3 rounded-lg font-bold transition-colors"
+            >
               Contact Us
             </button>
           </div>

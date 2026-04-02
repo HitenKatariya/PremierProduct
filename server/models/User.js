@@ -30,6 +30,16 @@ const userSchema = new mongoose.Schema(
       }
     },
     password: { type: String, required: true, minlength: 6 },
+    phone: {
+      type: String,
+      trim: true,
+      default: ''
+    },
+    address: {
+      type: String,
+      trim: true,
+      default: ''
+    },
     lastLogin: { type: Date, default: null }
   },
   { timestamps: true }

@@ -1,4 +1,5 @@
 require("dotenv").config();
+const PORT = process.env.PORT || 5000;
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -14,6 +15,22 @@ const contactRoutes = require("./routes/contactRoutes");
 const app = express();
 
 // CORS configuration for production
+// ✅ Better CORS
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://premier-product.vercel.app"
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
 const corsOptions = {
   origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   credentials: true,
@@ -140,8 +157,6 @@ app.get('/api', (req, res) => {
     ]
   });
 });
-
-const PORT = process.env.PORT || 5000;
 
 // Global error handlers
 process.on('uncaughtException', (error) => {

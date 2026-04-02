@@ -10,6 +10,9 @@ import ProductDetail from './components/ProductDetail';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
 import OrderSuccess from './components/OrderSuccess';
+import Profile from './components/Profile';
+import MyOrders from './components/MyOrders';
+import Settings from './components/Settings';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
 import AdminProducts from './components/AdminProducts';
@@ -233,6 +236,9 @@ function AppContent() {
             element={<OrderSuccess />} 
           />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/my-orders" element={<MyOrders />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/api-showcase" element={<APIShowcase />} />
 
           {/* Admin Routes */}

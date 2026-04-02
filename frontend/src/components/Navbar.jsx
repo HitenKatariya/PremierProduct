@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import cartService from "../services/cartService";
 
 const Navbar = ({ user, isLoggedIn, onLogout, onOpenLogin, onOpenCart, cartUpdateTrigger }) => {
@@ -7,6 +7,7 @@ const Navbar = ({ user, isLoggedIn, onLogout, onOpenLogin, onOpenCart, cartUpdat
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActiveLink = (path) => location.pathname === path;
 
@@ -159,15 +160,36 @@ const Navbar = ({ user, isLoggedIn, onLogout, onOpenLogin, onOpenCart, cartUpdat
                         </p>
                         <p className="text-sm text-gray-500">{user.email}</p>
                       </div>
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          navigate('/profile');
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                      >
                         My Profile
-                      </a>
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          navigate('/my-orders');
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                      >
                         My Orders
-                      </a>
-                      <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors">
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowUserMenu(false);
+                          navigate('/settings');
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                      >
                         Settings
-                      </a>
+                      </button>
                       <button
                         onClick={() => {
                           setShowUserMenu(false);

@@ -200,9 +200,9 @@ const Cart = ({ isOpen, onClose, user, isLoggedIn, cartUpdateTrigger }) => {
                   return (
                   <div key={productId} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
                     <img
-                      src={item.productImage || 'https://via.placeholder.com/80x80?text=Product'}
+                      src={item.productImage || (item.productId && item.productId.image) || ''}
                       alt={item.productName}
-                      className="w-16 h-16 object-cover rounded-lg"
+                      className="w-16 h-16 object-cover rounded-lg bg-gray-100"
                     />
                     <div className="flex-1">
                       <h3 className="font-medium text-gray-800 text-sm">{item.productName}</h3>

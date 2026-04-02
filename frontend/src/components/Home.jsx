@@ -1,26 +1,70 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Login from "./Login";
 import Signup from "./Signup";
+import productService from "../services/productService";
 
 const Home = ({ isLoggedIn, onLogin, showLogin, onOpenLogin, onCloseLogin, handleSignup }) => {
   const [showSignup, setShowSignup] = useState(false);
-  // Removed dynamic category preview; cartItems/productsByCategory/loading no longer used
+  const [heroImage, setHeroImage] = useState("");
+  const [categoryCards, setCategoryCards] = useState([]);
+  const [loadingImages, setLoadingImages] = useState(true);
+  const [imageError, setImageError] = useState("");
   const navigate = useNavigate();
 
-  // Featured categories provided by user (exact display + image mapping)
-  const featuredCategoryFiles = [
-    { name: 'pressure gauge parts', file: 'presaure gauge parts.jpg' }, // note: source file has misspelling
-    { name: 'cable gland accessories', file: 'cable and accessories.jpg' },
-    { name: 'panumatic part', file: 'panumatic parts.jpg' },
-    { name: 'Air Conditioners and Refigeration Parts', file: 'air conditioner and refrigerator.jpg' },
-    { name: 'brass insert', file: 'Brass insert.webp' },
-    { name: 'brass fitting', file: 'Brass fitting.webp' }
+  // Featured categories (names must match backend category values)
+  const featuredCategories = [
+    'pressure gauge parts',
+    'cable gland accessories',
+    'panumatic part',
+    'Air Conditioners and Refigeration Parts',
+    'brass insert',
+    'brass fitting'
   ];
 
-  const imageBasePath = '/images/products/pressure-gauge-parts/premium';
+  // Load representative Cloudinary images per category for the home page
+  useEffect(() => {
+    const loadCategoryImages = async () => {
+      try {
+        setLoadingImages(true);
+        setImageError("");
 
-  // Removed dynamic category fetch effect
+        // Fetch a good number of products and then pick one image per category
+        const res = await productService.getProducts({ limit: 200 });
+        if (!res.success || !Array.isArray(res.products)) {
+          setImageError(res.message || "Failed to load product images");
+          return;
+        }
+
+        const byCategory = {};
+        res.products.forEach((p) => {
+          if (p.category && p.image && !byCategory[p.category]) {
+            byCategory[p.category] = p;
+          }
+        });
+
+        const cards = featuredCategories.map((name) => ({
+          name,
+          image: byCategory[name]?.image || "",
+        }));
+
+        setCategoryCards(cards);
+
+        // Pick a hero image from any product with a valid image
+        const firstWithImage = res.products.find((p) => p.image);
+        if (firstWithImage) {
+          setHeroImage(firstWithImage.image);
+        }
+      } catch (err) {
+        console.error("Home hero/category image load error:", err);
+        setImageError(err.message || "Failed to load product images");
+      } finally {
+        setLoadingImages(false);
+      }
+    };
+
+    loadCategoryImages();
+  }, []);
 
   const handleShopNow = () => {
     if (isLoggedIn) {
@@ -84,22 +128,29 @@ const Home = ({ isLoggedIn, onLogin, showLogin, onOpenLogin, onCloseLogin, handl
                     >
                       Shop Now
                     </button>
-                    <button className="border-2 border-white text-white hover:bg-white hover:text-blue-700 px-8 py-4 rounded-lg font-bold text-lg transition-colors">
+                    <button 
+                      onClick={() => navigate('/products')}
+                      className="border-2 border-white text-white hover:bg-white hover:text-blue-700 px-8 py-4 rounded-lg font-bold text-lg transition-colors"
+                    >
                       View Catalog
                     </button>
                   </div>
                 </div>
                 <div className="flex justify-center">
                   <div className="bg-white bg-opacity-10 p-8 rounded-2xl backdrop-blur-sm">
-                    <img 
-                      src="/images/products/pressure-gauge-parts/premium/Brass%20parts%20and%20fitting.jpg" 
-                      alt="Premium Brass Parts and Fittings" 
-                      className="rounded-xl shadow-2xl w-full h-auto max-w-md object-cover"
-                      onError={(e) => {
-                        // Fallback to a placeholder if image fails to load
-                        e.target.src = "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=500&h=400&fit=crop&crop=center";
-                      }}
-                    />
+                    {heroImage ? (
+                      <img
+                        src={heroImage}
+                        alt="Premium Brass Parts and Fittings"
+                        className="rounded-xl shadow-2xl w-full h-auto max-w-md object-cover"
+                        onError={(e) => {
+                          e.currentTarget.classList.add("hidden");
+                          e.currentTarget.onerror = null;
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-64 max-w-md rounded-xl shadow-2xl bg-gray-200 animate-pulse" />
+                    )}
                   </div>
                 </div>
               </div>
@@ -153,22 +204,32 @@ const Home = ({ isLoggedIn, onLogin, showLogin, onOpenLogin, onCloseLogin, handl
               <div className="text-center mb-12">
                 <h2 className="text-3xl font-bold text-gray-800 mb-4">Browse by Category</h2>
                 <p className="text-gray-600 text-lg">Tap a category image to jump directly to its products</p>
+                {imageError && (
+                  <p className="mt-2 text-sm text-red-600">{imageError}</p>
+                )}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {featuredCategoryFiles.map(cat => (
+                {(categoryCards.length ? categoryCards : featuredCategories.map(name => ({ name, image: "" })) ).map(cat => (
                   <div
                     key={cat.name}
                     className="group relative rounded-xl overflow-hidden shadow hover:shadow-lg cursor-pointer bg-white border"
                     onClick={() => navigate(`/products?category=${encodeURIComponent(cat.name)}`)}
                   >
                     <div className="aspect-video w-full overflow-hidden bg-gray-100">
-                      <img
-                        src={`${imageBasePath}/${encodeURIComponent(cat.file)}`}
-                        alt={cat.name}
-                        loading="lazy"
-                        onError={(e) => { e.currentTarget.src = 'https://images.unsplash.com/photo-1581092295338-a2c6c3c58a2b?w=400&h=250&fit=crop'; e.currentTarget.onerror = null; }}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
+                      {cat.image ? (
+                        <img
+                          src={cat.image}
+                          alt={cat.name}
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.classList.add("hidden");
+                            e.currentTarget.onerror = null;
+                          }}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-b from-gray-100 to-gray-300" />
+                      )}
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
                     <div className="absolute bottom-0 left-0 right-0 p-4 text-white">

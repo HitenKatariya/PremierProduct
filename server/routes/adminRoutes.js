@@ -5,18 +5,20 @@ const User = require('../models/User');
 const Order = require('../models/Order');
 const multer = require('multer');
 const path = require('path');
+const cloudinary = require('../config/cloudinary');
 
 const router = express.Router();
 
 // Configure multer for image uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
+    // Temporary local folder; image will be pushed to Cloudinary
     cb(null, 'uploads/');
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
+  },
 });
 
 const upload = multer({
@@ -65,14 +67,18 @@ router.get('/dashboard/overview', adminAuth, async (req, res) => {
       shippingName: o.shippingAddress?.fullName
     })));
 
-    // Get low stock products (less than 10 items)
-    const lowStockProducts = await Product.find({ stock: { $lt: 10 } })
-      .select('name stock category')
+    // Get low stock products (less than 10 items based on stockQuantity)
+    const lowStockProducts = await Product.find({ stockQuantity: { $lt: 10 } })
+      .select('name stockQuantity category')
       .limit(10);
 
-    // Calculate revenue stats
+    // Calculate revenue stats (all non-cancelled orders)
     const revenueStats = await Order.aggregate([
-      { $match: { paymentStatus: 'paid' } },
+      {
+        $match: {
+          orderStatus: { $ne: 'cancelled' }
+        }
+      },
       {
         $group: {
           _id: null,
@@ -90,7 +96,7 @@ router.get('/dashboard/overview', adminAuth, async (req, res) => {
       {
         $match: {
           createdAt: { $gte: sixMonthsAgo },
-          paymentStatus: 'paid'
+          orderStatus: { $ne: 'cancelled' }
         }
       },
       {
@@ -215,9 +221,24 @@ router.post('/products', adminAuth, upload.single('image'), async (req, res) => 
       inStock: parseInt(stock) > 0
     };
 
-    // Add image if uploaded
+    // Add image if uploaded: push to Cloudinary
     if (req.file) {
-      productData.image = `/uploads/${req.file.filename}`;
+      try {
+        const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+          folder: 'premier-products-admin',
+          use_filename: true,
+          unique_filename: true,
+          overwrite: false,
+        });
+
+        productData.image = uploadResult.secure_url;
+      } catch (cloudErr) {
+        console.error('Cloudinary upload error (create product):', cloudErr);
+        return res.status(500).json({
+          success: false,
+          message: 'Image upload failed. Please try again.',
+        });
+      }
     }
 
     // Create product
@@ -273,7 +294,22 @@ router.put('/products/:id', adminAuth, upload.single('image'), async (req, res) 
 
     // Update image if uploaded
     if (req.file) {
-      product.image = `/uploads/${req.file.filename}`;
+      try {
+        const uploadResult = await cloudinary.uploader.upload(req.file.path, {
+          folder: 'premier-products-admin',
+          use_filename: true,
+          unique_filename: true,
+          overwrite: false,
+        });
+
+        product.image = uploadResult.secure_url;
+      } catch (cloudErr) {
+        console.error('Cloudinary upload error (update product):', cloudErr);
+        return res.status(500).json({
+          success: false,
+          message: 'Image upload failed. Please try again.',
+        });
+      }
     }
 
     await product.save();
