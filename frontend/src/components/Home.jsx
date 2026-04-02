@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Login from "./Login";
 import Signup from "./Signup";
 import productService from "../services/productService";
+import { API_ORIGIN } from "../config/api";
 
 const Home = ({ isLoggedIn, onLogin, showLogin, onOpenLogin, onCloseLogin, handleSignup }) => {
   const [showSignup, setShowSignup] = useState(false);
@@ -11,6 +12,12 @@ const Home = ({ isLoggedIn, onLogin, showLogin, onOpenLogin, onCloseLogin, handl
   const [loadingImages, setLoadingImages] = useState(true);
   const [imageError, setImageError] = useState("");
   const navigate = useNavigate();
+
+  const normalizeImageUrl = (url) => {
+    if (!url) return "";
+    if (url.startsWith("http")) return url;
+    return `${API_ORIGIN}${url}`;
+  };
 
   // Featured categories (names must match backend category values)
   const featuredCategories = [
@@ -45,7 +52,7 @@ const Home = ({ isLoggedIn, onLogin, showLogin, onOpenLogin, onCloseLogin, handl
 
         const cards = featuredCategories.map((name) => ({
           name,
-          image: byCategory[name]?.image || "",
+          image: normalizeImageUrl(byCategory[name]?.image || ""),
         }));
 
         setCategoryCards(cards);
@@ -53,7 +60,7 @@ const Home = ({ isLoggedIn, onLogin, showLogin, onOpenLogin, onCloseLogin, handl
         // Pick a hero image from any product with a valid image
         const firstWithImage = res.products.find((p) => p.image);
         if (firstWithImage) {
-          setHeroImage(firstWithImage.image);
+          setHeroImage(normalizeImageUrl(firstWithImage.image));
         }
       } catch (err) {
         console.error("Home hero/category image load error:", err);
