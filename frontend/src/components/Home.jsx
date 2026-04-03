@@ -19,6 +19,16 @@ const Home = ({ isLoggedIn, onLogin, showLogin, onOpenLogin, onCloseLogin, handl
     return `${API_ORIGIN}${url}`;
   };
 
+  // Static fallback images per category (served from backend /images)
+  const categoryFallbackImages = {
+    'pressure gauge parts': `${API_ORIGIN}/images/presaure%20gauge%20parts.jpg`,
+    'cable gland accessories': `${API_ORIGIN}/images/cable%20and%20accessories.jpg`,
+    'panumatic part': `${API_ORIGIN}/images/panumatic%20parts.jpg`,
+    'Air Conditioners and Refigeration Parts': `${API_ORIGIN}/images/air%20conditioner%20and%20refrigerator.jpg`,
+    'brass insert': `${API_ORIGIN}/images/Brass%20insert.webp`,
+    'brass fitting': `${API_ORIGIN}/images/Brass%20fitting.webp`
+  };
+
   // Featured categories (names must match backend category values)
   const featuredCategories = [
     'pressure gauge parts',
@@ -50,10 +60,15 @@ const Home = ({ isLoggedIn, onLogin, showLogin, onOpenLogin, onCloseLogin, handl
           }
         });
 
-        const cards = featuredCategories.map((name) => ({
-          name,
-          image: normalizeImageUrl(byCategory[name]?.image || ""),
-        }));
+        const cards = featuredCategories.map((name) => {
+          const apiImage = byCategory[name]?.image || "";
+          const normalizedApiImage = normalizeImageUrl(apiImage);
+          const fallbackImage = categoryFallbackImages[name] || "";
+          return {
+            name,
+            image: normalizedApiImage || fallbackImage,
+          };
+        });
 
         setCategoryCards(cards);
 
