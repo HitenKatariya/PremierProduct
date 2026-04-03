@@ -151,12 +151,17 @@ const Home = ({ isLoggedIn, onLogin, showLogin, onOpenLogin, onCloseLogin, handl
                         alt="Premium Brass Parts and Fittings"
                         className="rounded-xl shadow-2xl w-full h-auto max-w-md object-cover"
                         onError={(e) => {
-                          e.currentTarget.classList.add("hidden");
+                          // If the dynamic product image fails, fall back to a static hero graphic
                           e.currentTarget.onerror = null;
+                          e.currentTarget.src = "/logo-web.svg";
                         }}
                       />
                     ) : (
-                      <div className="w-full h-64 max-w-md rounded-xl shadow-2xl bg-gray-200 animate-pulse" />
+                      <img
+                        src="/logo-web.svg"
+                        alt="Premium Brass Parts and Fittings"
+                        className="rounded-xl shadow-2xl w-full h-auto max-w-md object-cover"
+                      />
                     )}
                   </div>
                 </div>
