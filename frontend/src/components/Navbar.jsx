@@ -271,23 +271,77 @@ const Navbar = ({ user, isLoggedIn, onLogout, onOpenLogin, onOpenCart, cartUpdat
               </li>
               <li>
                 <Link 
-                  to="/products" 
-                  className={`block px-4 py-2 font-medium transition-colors ${
-                    isActiveLink('/products') 
-                      ? 'text-blue-700 bg-blue-50' 
-                      : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50'
-                  }`}
+            {!isLoggedIn && (
+              <div className="px-4 mt-4 space-y-2">
+                <button 
+                  onClick={onOpenLogin}
+                  className="w-full bg-blue-700 hover:bg-blue-800 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                >
+                  Login
+                </button>
+                <Link 
+                  to="/admin/login"
+                  className="block w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-center"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Products
+                  Admin Login
                 </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/about" 
-                  className={`block px-4 py-2 font-medium transition-colors ${
-                    isActiveLink('/about') 
-                      ? 'text-blue-700 bg-blue-50' 
+              </div>
+            )}
+
+            {isLoggedIn && user && (
+              <div className="px-4 mt-4 pt-4 border-t border-gray-200 space-y-2">
+                <div className="flex items-center space-x-3 mb-2">
+                  <div className="w-9 h-9 bg-blue-700 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                    {user.name ? user.name.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-gray-900">{user.name || user.email.split('@')[0]}</span>
+                    <span className="text-xs text-gray-500">Account</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    navigate('/profile');
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                >
+                  My Profile
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    navigate('/my-orders');
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                >
+                  My Orders
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    navigate('/settings');
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                >
+                  Settings
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onLogout();
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            )}
                       : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50'
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
