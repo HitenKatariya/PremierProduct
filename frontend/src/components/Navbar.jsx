@@ -257,11 +257,11 @@ const Navbar = ({ user, isLoggedIn, onLogout, onOpenLogin, onOpenCart, cartUpdat
           <div className="md:hidden bg-white border-t border-gray-200 py-4">
             <ul className="space-y-4">
               <li>
-                <Link 
-                  to="/" 
+                <Link
+                  to="/"
                   className={`block px-4 py-2 font-medium transition-colors ${
-                    isActiveLink('/') 
-                      ? 'text-blue-700 bg-blue-50' 
+                    isActiveLink('/')
+                      ? 'text-blue-700 bg-blue-50'
                       : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50'
                   }`}
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -270,16 +270,55 @@ const Navbar = ({ user, isLoggedIn, onLogout, onOpenLogin, onOpenCart, cartUpdat
                 </Link>
               </li>
               <li>
-                <Link 
+                <Link
+                  to="/products"
+                  className={`block px-4 py-2 font-medium transition-colors ${
+                    isActiveLink('/products')
+                      ? 'text-blue-700 bg-blue-50'
+                      : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50'
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Products
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/about"
+                  className={`block px-4 py-2 font-medium transition-colors ${
+                    isActiveLink('/about')
+                      ? 'text-blue-700 bg-blue-50'
+                      : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50'
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/contact"
+                  className={`block px-4 py-2 font-medium transition-colors ${
+                    isActiveLink('/contact')
+                      ? 'text-blue-700 bg-blue-50'
+                      : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50'
+                  }`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Contact
+                </Link>
+              </li>
+            </ul>
+
             {!isLoggedIn && (
               <div className="px-4 mt-4 space-y-2">
-                <button 
+                <button
                   onClick={onOpenLogin}
                   className="w-full bg-blue-700 hover:bg-blue-800 text-white px-6 py-2 rounded-lg font-medium transition-colors"
                 >
                   Login
                 </button>
-                <Link 
+                <Link
                   to="/admin/login"
                   className="block w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-center"
                   onClick={() => setIsMobileMenuOpen(false)}
@@ -340,44 +379,6 @@ const Navbar = ({ user, isLoggedIn, onLogout, onOpenLogin, onOpenCart, cartUpdat
                 >
                   Sign Out
                 </button>
-              </div>
-            )}
-                      : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/contact" 
-                  className={`block px-4 py-2 font-medium transition-colors ${
-                    isActiveLink('/contact') 
-                      ? 'text-blue-700 bg-blue-50' 
-                      : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Contact
-                </Link>
-              </li>
-            </ul>
-            {!isLoggedIn && (
-              <div className="px-4 mt-4 space-y-2">
-                <button 
-                  onClick={onOpenLogin}
-                  className="w-full bg-blue-700 hover:bg-blue-800 text-white px-6 py-2 rounded-lg font-medium transition-colors"
-                >
-                  Login
-                </button>
-                <Link 
-                  to="/admin/login"
-                  className="block w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-center"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Admin Login
-                </Link>
               </div>
             )}
           </div>
