@@ -4,6 +4,7 @@ const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const auth = require('../middleware/auth');
+const { sendOrderConfirmationEmail } = require('../config/email');
 
 // Create new order
 router.post('/', auth, async (req, res) => {
@@ -117,6 +118,14 @@ router.post('/', auth, async (req, res) => {
     const populatedOrder = await Order.findById(savedOrder._id)
       .populate('user', 'username email')
       .populate('items.product', 'name image');
+
+    // Fire-and-forget order confirmation email
+    if (populatedOrder?.user?.email) {
+      sendOrderConfirmationEmail({ user: populatedOrder.user, order: populatedOrder })
+        .catch((emailError) => {
+          console.error('Order confirmation email error:', emailError?.message || emailError);
+        });
+    }
 
     res.status(201).json({
       success: true,

@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require("../models/User");
 const { generateToken } = require("../utils/generateToken");
 const authenticateToken = require("../middleware/auth");
+const { sendWelcomeEmail, sendPasswordResetEmail } = require("../config/email");
 
 // Email and password validators
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -46,6 +47,11 @@ router.post("/register", async (req, res) => {
 
       const token = generateToken(user._id);
 
+      // Send welcome email (do not block response on failure)
+      sendWelcomeEmail({ username: user.username, email: user.email }).catch((emailErr) => {
+        console.error("Welcome email error:", emailErr?.message || emailErr);
+      });
+
       res.status(201).json({
         success: true,
         message: "User registered successfully",
@@ -78,6 +84,55 @@ router.post("/register", async (req, res) => {
   } catch (error) {
     console.error("⚠️ Registration error:", error);
     res.status(500).json({ success: false, message: "Server error during registration" });
+  }
+});
+
+// 🔁 PASSWORD RESET (simple temporary password flow)
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const normalizedEmail = email?.toLowerCase().trim();
+
+    if (!normalizedEmail) {
+      return res.status(400).json({ success: false, message: "Email is required" });
+    }
+
+    if (!validateEmail(normalizedEmail)) {
+      return res.status(400).json({ success: false, message: "Invalid email address" });
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
+
+    // For security, always respond with success message, even if user not found
+    if (!user) {
+      console.log("Password reset requested for non-existing email:", normalizedEmail);
+      return res.status(200).json({
+        success: true,
+        message: "If an account exists with this email, a reset email has been sent.",
+      });
+    }
+
+    // Generate a simple temporary password (8 chars)
+    const tempPassword = Math.random().toString(36).slice(-8);
+    user.password = tempPassword;
+    await user.save();
+
+    // Send reset email (do not block response on failure)
+    sendPasswordResetEmail({
+      username: user.username,
+      email: user.email,
+      tempPassword,
+    }).catch((emailErr) => {
+      console.error("Password reset email error:", emailErr?.message || emailErr);
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "If an account exists with this email, a reset email has been sent.",
+    });
+  } catch (error) {
+    console.error("⚠️ Reset password error:", error);
+    return res.status(500).json({ success: false, message: "Server error during password reset" });
   }
 });
 
