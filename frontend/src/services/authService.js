@@ -4,19 +4,19 @@ import API_BASE_URL from '../config/api';
 const API_ROOT = `${API_BASE_URL}/users`;
 
 class AuthService {
-  // Get token from localStorage
+  // Get token from sessionStorage (per-tab, cleared on close/refresh)
   getToken() {
-    return localStorage.getItem('token');
+    return sessionStorage.getItem('token');
   }
 
-  // Set token in localStorage
+  // Set token in sessionStorage
   setToken(token) {
-    localStorage.setItem('token', token);
+    sessionStorage.setItem('token', token);
   }
 
-  // Remove token from localStorage
+  // Remove token from sessionStorage
   removeToken() {
-    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
   }
 
   // Check if user is authenticated
@@ -142,7 +142,7 @@ class AuthService {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Always remove token from localStorage
+      // Always remove token from storage
       this.removeToken();
     }
   }

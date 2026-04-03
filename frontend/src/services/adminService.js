@@ -5,9 +5,9 @@ import API_BASE_ROOT from "../config/api";
 const API_BASE_URL = `${API_BASE_ROOT}/admin`;
 const AUTH_API_URL = `${API_BASE_ROOT}/admin/auth`;
 
-// Get auth token from localStorage
+// Get auth token from sessionStorage
 const getAdminToken = () => {
-  return localStorage.getItem('adminToken');
+  return sessionStorage.getItem('adminToken');
 };
 
 // Create axios instance with auth header
@@ -24,8 +24,8 @@ axios.interceptors.response.use(
       const message = error.response?.data?.message || '';
       if (message.includes('expired') || message.includes('invalid')) {
         // Token expired, clear auth data and redirect to login
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('adminUser');
+        sessionStorage.removeItem('adminToken');
+        sessionStorage.removeItem('adminUser');
         
         // Only redirect if we're not already on the login page
         if (!window.location.pathname.includes('/admin/login')) {
@@ -39,15 +39,15 @@ axios.interceptors.response.use(
 
 // Admin Authentication Service
 class AdminAuthService {
-  // Set token in localStorage
+  // Set token in sessionStorage
   setToken(token) {
-    localStorage.setItem('adminToken', token);
+    sessionStorage.setItem('adminToken', token);
   }
 
-  // Remove token from localStorage
+  // Remove token from sessionStorage
   removeToken() {
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminUser');
+    sessionStorage.removeItem('adminToken');
+    sessionStorage.removeItem('adminUser');
   }
 
   // Check if admin is authenticated
@@ -79,13 +79,13 @@ class AdminAuthService {
 
   // Get current admin user
   getCurrentAdmin() {
-    const adminData = localStorage.getItem('adminUser');
+    const adminData = sessionStorage.getItem('adminUser');
     return adminData ? JSON.parse(adminData) : null;
   }
 
   // Set admin user data
   setAdminUser(admin) {
-    localStorage.setItem('adminUser', JSON.stringify(admin));
+    sessionStorage.setItem('adminUser', JSON.stringify(admin));
   }
 
   // Admin login

@@ -3,9 +3,9 @@ import API_BASE_URL from '../config/api';
 
 const API_URL = `${API_BASE_URL}/cart`;
 
-// Get auth token from localStorage
+// Get auth token from sessionStorage (kept only for the current tab)
 const getAuthToken = () => {
-  return localStorage.getItem('token');
+  return sessionStorage.getItem('token');
 };
 
 // Create axios instance with auth header
