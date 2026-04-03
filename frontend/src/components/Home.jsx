@@ -236,14 +236,19 @@ const Home = ({ isLoggedIn, onLogin, showLogin, onOpenLogin, onCloseLogin, handl
                     onClick={() => navigate(`/products?category=${encodeURIComponent(cat.name)}`)}
                   >
                     <div className="aspect-video w-full overflow-hidden bg-gray-100">
-                      {cat.image ? (
+                      {cat.image || categoryFallbackImages[cat.name] ? (
                         <img
-                          src={cat.image}
+                          src={cat.image || categoryFallbackImages[cat.name]}
                           alt={cat.name}
                           loading="lazy"
                           onError={(e) => {
-                            e.currentTarget.classList.add("hidden");
                             e.currentTarget.onerror = null;
+                            const fallback = categoryFallbackImages[cat.name];
+                            if (fallback && e.currentTarget.src !== fallback) {
+                              e.currentTarget.src = fallback;
+                            } else {
+                              e.currentTarget.classList.add("hidden");
+                            }
                           }}
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
