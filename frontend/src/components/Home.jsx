@@ -144,25 +144,19 @@ const Home = ({ isLoggedIn, onLogin, showLogin, onOpenLogin, onCloseLogin, handl
                   </div>
                 </div>
                 <div className="flex justify-center">
-                  <div className="bg-white bg-opacity-10 p-8 rounded-2xl backdrop-blur-sm">
-                    {heroImage ? (
+                  <div className="bg-white bg-opacity-10 p-4 sm:p-6 rounded-2xl backdrop-blur-sm w-full max-w-md">
+                    <div className="w-full h-56 sm:h-64 lg:h-72 rounded-xl overflow-hidden shadow-2xl">
                       <img
-                        src={heroImage}
+                        src={heroImage || "/logo-web.svg"}
                         alt="Premium Brass Parts and Fittings"
-                        className="rounded-xl shadow-2xl w-full h-auto max-w-md object-cover"
+                        className="w-full h-full object-cover"
                         onError={(e) => {
                           // If the dynamic product image fails, fall back to a static hero graphic
                           e.currentTarget.onerror = null;
                           e.currentTarget.src = "/logo-web.svg";
                         }}
                       />
-                    ) : (
-                      <img
-                        src="/logo-web.svg"
-                        alt="Premium Brass Parts and Fittings"
-                        className="rounded-xl shadow-2xl w-full h-auto max-w-md object-cover"
-                      />
-                    )}
+                    </div>
                   </div>
                 </div>
               </div>
