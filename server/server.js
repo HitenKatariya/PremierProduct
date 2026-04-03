@@ -38,8 +38,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Serve static files for uploads
+// Serve static files for uploads and images
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // Add request logging
 app.use((req, res, next) => {

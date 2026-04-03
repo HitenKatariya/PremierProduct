@@ -147,11 +147,10 @@ const Home = ({ isLoggedIn, onLogin, showLogin, onOpenLogin, onCloseLogin, handl
                   <div className="bg-white bg-opacity-10 p-4 sm:p-6 rounded-2xl backdrop-blur-sm w-full max-w-md">
                     <div className="w-full h-56 sm:h-64 lg:h-72 rounded-xl overflow-hidden shadow-2xl">
                       <img
-                        src={heroImage || "/logo-web.svg"}
-                        alt="Premium Brass Parts and Fittings"
+                        src={`${API_ORIGIN}/images/Premium%20brass%20parts%20and%20fittings.jpg`}
+                        alt="Premium brass parts and fittings"
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          // If the dynamic product image fails, fall back to a static hero graphic
                           e.currentTarget.onerror = null;
                           e.currentTarget.src = "/logo-web.svg";
                         }}
