@@ -1,40 +1,55 @@
 const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 
 // Use environment variables for production-safe configuration
-// EMAIL_USER: Gmail address
-// EMAIL_PASS: Gmail app password
-// EMAIL_FROM (optional): Display "from" address
-// ADMIN_EMAIL (optional): Where admin/contact emails are sent
+// Primary (production, e.g. Render):
+//   SENDGRID_API_KEY: SendGrid API key
+//   SENDGRID_FROM: Verified sender email in SendGrid
+//   ADMIN_EMAIL (optional): Where admin/contact emails are sent
+// Fallback (local/dev):
+//   EMAIL_USER: Gmail address
+//   EMAIL_PASS: Gmail app password
+//   EMAIL_FROM (optional): Display "from" address
 
+const sendgridApiKey = process.env.SENDGRID_API_KEY;
+const sendgridFrom = process.env.SENDGRID_FROM;
 const emailUser = process.env.EMAIL_USER;
 const emailPass = process.env.EMAIL_PASS;
-const emailFrom = process.env.EMAIL_FROM || emailUser;
-const adminEmail = process.env.ADMIN_EMAIL || emailUser;
+const emailFrom = process.env.EMAIL_FROM || sendgridFrom || emailUser;
+const adminEmail = process.env.ADMIN_EMAIL || emailUser || sendgridFrom;
+
+const useSendGrid = !!sendgridApiKey;
 
 let transporter;
 
-if (emailUser && emailPass) {
-  // Gmail SMTP transport
-  transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: emailUser,
-      pass: emailPass,
-    },
-  });
-
-  // Verify transporter configuration (logs once at startup)
-  transporter.verify((error) => {
-    if (error) {
-      console.error('❌ Email transporter error:', error.message || error);
-    } else {
-      console.log('✅ Email server is ready to send messages');
-    }
-  });
+if (useSendGrid) {
+  // Configure SendGrid HTTP client
+  sgMail.setApiKey(sendgridApiKey);
+  console.log('✅ Email: using SendGrid API');
 } else {
-  console.warn('⚠️ EMAIL_USER or EMAIL_PASS not set. Emails will be logged instead of sent.');
-  // Fallback transport that just logs emails (useful for local dev without credentials)
-  transporter = nodemailer.createTransport({ jsonTransport: true });
+  if (emailUser && emailPass) {
+    // Gmail SMTP transport (local/dev or if SMTP is allowed)
+    transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: emailUser,
+        pass: emailPass,
+      },
+    });
+
+    // Verify transporter configuration (logs once at startup)
+    transporter.verify((error) => {
+      if (error) {
+        console.error('❌ Email transporter error:', error.message || error);
+      } else {
+        console.log('✅ Email server is ready to send messages');
+      }
+    });
+  } else {
+    console.warn('⚠️ EMAIL_USER or EMAIL_PASS not set. Emails will be logged instead of sent.');
+    // Fallback transport that just logs emails (useful for local dev without credentials)
+    transporter = nodemailer.createTransport({ jsonTransport: true });
+  }
 }
 
 // Low-level reusable send function
@@ -43,18 +58,33 @@ const sendEmail = async ({ to, subject, html, text, replyTo }) => {
     throw new Error('Email recipient (to) is required');
   }
 
-  const mailOptions = {
-    from: emailFrom || emailUser,
-    to,
-    subject,
-    html,
-    text,
-    replyTo,
-  };
-
   try {
+    if (useSendGrid) {
+      const msg = {
+        from: emailFrom,
+        to,
+        subject,
+        html,
+        text,
+        replyTo,
+      };
+
+      const [response] = await sgMail.send(msg);
+      console.log('📧 Email sent via SendGrid:', response.statusCode);
+      return { success: true, messageId: response.headers['x-message-id'] || null };
+    }
+
+    const mailOptions = {
+      from: emailFrom || emailUser,
+      to,
+      subject,
+      html,
+      text,
+      replyTo,
+    };
+
     const info = await transporter.sendMail(mailOptions);
-    console.log('📧 Email sent:', info.messageId || info);
+    console.log('📧 Email sent via SMTP:', info.messageId || info);
     return { success: true, messageId: info.messageId || null };
   } catch (error) {
     console.error('❌ Error sending email:', error);
