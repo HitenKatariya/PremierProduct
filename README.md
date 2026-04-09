@@ -127,6 +127,15 @@ Premier Product/
    npm run dev
    ```
 
+## 🚀 Deployment
+
+This project is deployed and accessible online:
+
+- 🌐 Frontend is deployed on **Vercel**
+- ⚙️ Backend is deployed on **Render**
+
+The deployment ensures scalability, fast performance, and easy access for users.   
+
 ## 📱 Application Components
 
 ### Frontend Components
@@ -192,22 +201,15 @@ Premier Product/
 
 - 🛒 Shopping cart functionality
 - 💳 Payment integration
-- 📧 Email notifications
-- 📊 Admin dashboard
-- 🔍 Advanced search features
 - ⭐ Product reviews and ratings
 - 📱 Progressive Web App (PWA)
 - 🌐 Multi-language support
 
 ---
 
-## 🤝 Contributing
-
-This is an academic project for SGP III. 
-
 ## 📄 License
 
-This project is created for academic purposes as part of SGP III coursework.
+This project is created for academic purposes as part of SGP III coursework and is also a live client-based project developed for a brass parts company in Jamnagar.
 
 ---
 
